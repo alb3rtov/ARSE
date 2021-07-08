@@ -1,3 +1,4 @@
+from os import close
 import tkinter as tk
 import tkinter.font as font
 import crawler
@@ -20,25 +21,43 @@ class MainFrame:
         self.entry_location = tk.Entry(master, font=main_font, width= 20, bd=2)
         self.entry_location.place(x=120,y=102)
 
+        self.lbl_flat_type = tk.Label(master, font=main_font, bg="white", text= "Tipo")
+        self.lbl_flat_type.place(x=30,y=148)
+
+        self.clicked = tk.StringVar()
+        self.clicked.set(crawler.flat_types[0])
+        self.dropdown_menu_flat_type = tk.OptionMenu(master, self.clicked, *crawler.flat_types)
+        self.dropdown_menu_flat_type.configure(font=main_font)
+        self.dropdown_menu_flat_type.place(x=120, y=142)
+
+        self.lbl_min_price = tk.Label(master, font=main_font, bg="white", text= "Precio mínimo")
+        self.lbl_min_price.place(x=30,y=200)
+        self.entry_min_price = tk.Entry(master, font=main_font, width= 20, bd=2)
+        self.entry_min_price.place(x=160,y=202)
+
+        self.lbl_max_price = tk.Label(master, font=main_font, bg="white", text= "Precio máximo")
+        self.lbl_max_price.place(x=30,y=240)
+        self.entry_max_price = tk.Entry(master, font=main_font, width= 20, bd=2)
+        self.entry_max_price.place(x=160,y=242)
+
         self.v_cb1 = tk.IntVar()
-        self.checkbox1 = ttk.Checkbutton(master, text="Milanuncios", variable=self.v_cb1, onvalue=1, offvalue=0)
+        self.checkbox1 = tk.Checkbutton(master, text="Milanuncios", variable=self.v_cb1, bg="white", onvalue=1, offvalue=0)
         self.checkbox1.place(x=30,y=300)
 
         self.v_cb2 = tk.IntVar()
-        self.checkbox2 = ttk.Checkbutton(master, text="Fotocasa", variable=self.v_cb2, onvalue=1, offvalue=0)
+        self.checkbox2 = tk.Checkbutton(master, text="Fotocasa", variable=self.v_cb2, bg="white", onvalue=1, offvalue=0)
         self.checkbox2.place(x=30,y=340)
         
         self.v_cb3 = tk.IntVar()
-        self.checkbox3 = ttk.Checkbutton(master, text="Idealista", variable=self.v_cb3, onvalue=1, offvalue=0)
+        self.checkbox3 = tk.Checkbutton(master, text="Idealista", variable=self.v_cb3, bg="white", highlightcolor="white", onvalue=1, offvalue=0)
         self.checkbox3.place(x=30,y=380)
 
-        #self.checkboxes_list = [self.checkbox1, self.checkbox2, self.checkbox3]
         self.checkboxes_list = [self.v_cb1, self.v_cb2, self.v_cb3]
-        
-        self.button_search = tk.Button(master, font=title_font, text="BUSCAR", command = lambda: self.search_matches(self.entry_location.get()))
+
+        self.button_search = tk.Button(master, font=title_font, text="BUSCAR", command = lambda: self.search_matches(self.entry_location.get(), self.clicked.get()))
         self.button_search.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
 
-    def search_matches(self, location):
+    def search_matches(self, location, flat_type):
         #Go to list of each site selected and scrap that website
         url_location = 'https://nominatim.openstreetmap.org/search/' + urllib.parse.quote(location) +'?format=json'
         response = requests.get(url_location).json()
@@ -57,7 +76,7 @@ class MainFrame:
             if checked_sites_list[i] == 1:
                 websites_list.append(crawler.def_url_sites_list[i])
 
-        crawler.main_crawler(format_address, websites_list, response[0]["lat"], response[0]["lon"])
+        crawler.main_crawler(format_address, websites_list, response[0]["lat"], response[0]["lon"], flat_type)
     
 def main():
     root = tk.Tk()

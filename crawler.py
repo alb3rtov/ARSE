@@ -4,9 +4,17 @@ from urllib.request import Request, urlopen
 from urllib.request import HTTPError
 from bs4 import BeautifulSoup
 
-def_url_sites_list = ["https://www.milanuncios.com/alquiler-de-estudios-en-",
-                    "https://www.fotocasa.es/es/alquiler/viviendas/",
-                    "https://www.idealista.com/alquiler-viviendas/ciudad-real-ciudad-real/"
+def_url_sites_list = ["https://www.milanuncios.com/alquiler-de-",
+                    "https://www.fotocasa.com/es/alquiler/viviendas/",
+                    "https://www.idealista.com/alquiler-viviendas/"
+]
+
+flat_types = ["pisos",
+            "estudios",
+            "apartamentos",
+            "casas",
+            "chalets",
+            "aticos"
 ]
 
 prices_tag = {"milanuncios" : "div aditem-price",
@@ -17,7 +25,7 @@ zones_tag = {"milanuncios" : "a aditem-detail-title",
             "fotocasa" : "h3 re-Card-title"
 }
 
-def main_crawler(format_address, website_list, latitude, longitude):
+def main_crawler(format_address, website_list, latitude, longitude, flat_type):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
     }
@@ -27,7 +35,7 @@ def main_crawler(format_address, website_list, latitude, longitude):
         website_name = website_name.netloc[4:]
         website_name = website_name[:-4]
 
-        url = generate_url(website_list[i], format_address, website_name)
+        url = generate_url(website_list[i], format_address, website_name, latitude, longitude, flat_type)
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -45,13 +53,20 @@ def main_crawler(format_address, website_list, latitude, longitude):
         for zone, price in zip(zone_list, prices_list):
             print(zone.get_text() + " - " + price.get_text())
 
-def generate_url(url_website, format_address, website_name):
-    if website_name == "milanuncios":
-        url = url_website + format_address + "-" + format_address.replace("-","_") + "/"
+def generate_url(url_website, format_address, website_name, latitude, longitude, flat_type):
+    
+    if website_name == "milanuncios":        
+        url = url_website + flat_type + "-en-" + format_address + "-" + format_address.replace("-","_") + "/"
+        print(url)
         return url
+
     elif website_name == "fotocasa":
-        #url = "https://www.fotocasa.es/es/alquiler/viviendas/"  + format_address + "-capital/todas-las-zonas/l/&gridType=3&latitude=" + latitude + "&longitude=" + longitude 
-        return
+        if flat_type == "pisos":
+            flat_type = "viviendas"
+        
+        url = url_website + flat_type + "/" + format_address + "-capital/todas-las-zonas/l/&gridType=3&latitude=" + latitude + "&longitude=" + longitude
+        print(url)
+        return url
     elif website_name == "idealista":
         return
     else:
