@@ -25,7 +25,7 @@ zones_tag = {"milanuncios" : "a aditem-detail-title",
             "fotocasa" : "h3 re-Card-title"
 }
 
-def main_crawler(format_address, website_list, latitude, longitude, flat_type):
+def main_crawler(format_address, website_list, latitude, longitude, flat_type, max_price, min_price):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
     }
@@ -35,7 +35,7 @@ def main_crawler(format_address, website_list, latitude, longitude, flat_type):
         website_name = website_name.netloc[4:]
         website_name = website_name[:-4]
 
-        url = generate_url(website_list[i], format_address, website_name, latitude, longitude, flat_type)
+        url = generate_url(website_list[i], format_address, website_name, latitude, longitude, flat_type, max_price, min_price)
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -53,10 +53,10 @@ def main_crawler(format_address, website_list, latitude, longitude, flat_type):
         for zone, price in zip(zone_list, prices_list):
             print(zone.get_text() + " - " + price.get_text())
 
-def generate_url(url_website, format_address, website_name, latitude, longitude, flat_type):
+def generate_url(url_website, format_address, website_name, latitude, longitude, flat_type, max_price, min_price):
     
     if website_name == "milanuncios":        
-        url = url_website + flat_type + "-en-" + format_address + "-" + format_address.replace("-","_") + "/"
+        url = url_website + flat_type + "-en-" + format_address + "-" + format_address.replace("-","_") + "/" + "?fromSearch=1&desde=" + min_price + "&hasta=" + max_price
         print(url)
         return url
 

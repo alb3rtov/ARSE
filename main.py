@@ -5,6 +5,7 @@ import crawler
 import requests
 import urllib.parse
 from tkinter import ttk
+from PIL import ImageTk,Image
 from scrapy.selector import Selector
 from scrapy.http import HtmlResponse
 
@@ -49,15 +50,39 @@ class MainFrame:
         self.checkbox2.place(x=30,y=340)
         
         self.v_cb3 = tk.IntVar()
-        self.checkbox3 = tk.Checkbutton(master, text="Idealista", variable=self.v_cb3, bg="white", highlightcolor="white", onvalue=1, offvalue=0)
+        self.checkbox3 = tk.Checkbutton(master, text="Idealista", variable=self.v_cb3, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
         self.checkbox3.place(x=30,y=380)
 
-        self.checkboxes_list = [self.v_cb1, self.v_cb2, self.v_cb3]
+        self.v_cb4 = tk.IntVar()
+        self.checkbox4= tk.Checkbutton(master, text="Pisos.com", variable=self.v_cb4, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox4.place(x=200,y=300)
 
-        self.button_search = tk.Button(master, font=title_font, text="BUSCAR", command = lambda: self.search_matches(self.entry_location.get(), self.clicked.get()))
+        self.v_cb5 = tk.IntVar()
+        self.checkbox5= tk.Checkbutton(master, text="Vivados", variable=self.v_cb5, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox5.place(x=200,y=340)
+
+        self.v_cb6 = tk.IntVar()
+        self.checkbox6= tk.Checkbutton(master, text="Enalquier", variable=self.v_cb6, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox6.place(x=200,y=380)
+
+        self.v_cb7 = tk.IntVar()
+        self.checkbox7= tk.Checkbutton(master, text="Yaencontre", variable=self.v_cb7, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox7.place(x=370,y=300)
+
+        self.v_cb8 = tk.IntVar()
+        self.checkbox8= tk.Checkbutton(master, text="Tucasa", variable=self.v_cb8, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox8.place(x=370,y=340)
+
+        self.v_cb9 = tk.IntVar()
+        self.checkbox9= tk.Checkbutton(master, text="Departiculares", variable=self.v_cb9, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox9.place(x=370,y=380)
+
+        self.checkboxes_list = [self.v_cb1, self.v_cb2, self.v_cb3, self.v_cb4, self.v_cb5, self.v_cb6, self.v_cb7, self.v_cb8, self.v_cb9]
+
+        self.button_search = tk.Button(master, font=title_font, text="BUSCAR", command = lambda: self.search_matches(self.entry_location.get(), self.clicked.get(), self.entry_max_price.get(), self.entry_min_price.get()))
         self.button_search.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
 
-    def search_matches(self, location, flat_type):
+    def search_matches(self, location, flat_type, max_price, min_price):
         #Go to list of each site selected and scrap that website
         url_location = 'https://nominatim.openstreetmap.org/search/' + urllib.parse.quote(location) +'?format=json'
         response = requests.get(url_location).json()
@@ -76,7 +101,7 @@ class MainFrame:
             if checked_sites_list[i] == 1:
                 websites_list.append(crawler.def_url_sites_list[i])
 
-        crawler.main_crawler(format_address, websites_list, response[0]["lat"], response[0]["lon"], flat_type)
+        crawler.main_crawler(format_address, websites_list, response[0]["lat"], response[0]["lon"], flat_type, max_price, min_price)
     
 def main():
     root = tk.Tk()
