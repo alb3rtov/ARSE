@@ -4,9 +4,11 @@ from urllib.request import Request, urlopen
 from urllib.request import HTTPError
 from bs4 import BeautifulSoup
 
+# Global lists and dics
 def_url_sites_list = ["https://www.milanuncios.com/alquiler-de-",
-                    "https://www.fotocasa.com/es/alquiler/viviendas/",
-                    "https://www.idealista.com/alquiler-viviendas/"
+                    "https://www.fotocasa.com/es/alquiler/",
+                    "https://www.idealista.com/alquiler-viviendas/",
+                    "https://www.pisos.com/alquiler/"
 ]
 
 flat_types = ["pisos",
@@ -18,14 +20,17 @@ flat_types = ["pisos",
 ]
 
 prices_tag = {"milanuncios" : "div aditem-price",
-            "fotocasa" : "span re-Card-price" 
+            "fotocasa" : "span re-Card-price",
+            "pisos" : "span ad-preview__price"
 }
 
 zones_tag = {"milanuncios" : "a aditem-detail-title",
-            "fotocasa" : "h3 re-Card-title"
+            "fotocasa" : "h3 re-Card-title",
+            "pisos" : "a ad-preview__title"
 }
 
 def main_crawler(format_address, website_list, latitude, longitude, flat_type, max_price, min_price):
+    """ Request the HTML code of each listed website and extract the relevant information """
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
     }
@@ -52,9 +57,9 @@ def main_crawler(format_address, website_list, latitude, longitude, flat_type, m
 
         for zone, price in zip(zone_list, prices_list):
             print(zone.get_text() + " - " + price.get_text())
-
+            
 def generate_url(url_website, format_address, website_name, latitude, longitude, flat_type, max_price, min_price):
-    
+    """ Generate the main url based on each website """
     if website_name == "milanuncios":        
         url = url_website + flat_type + "-en-" + format_address + "-" + format_address.replace("-","_") + "/" + "?fromSearch=1&desde=" + min_price + "&hasta=" + max_price
         print(url)
@@ -64,10 +69,17 @@ def generate_url(url_website, format_address, website_name, latitude, longitude,
         if flat_type == "pisos":
             flat_type = "viviendas"
         
-        url = url_website + flat_type + "/" + format_address + "-capital/todas-las-zonas/l/&gridType=3&latitude=" + latitude + "&longitude=" + longitude
+        url = url_website + flat_type + "/" + format_address + "-capital/todas-las-zonas/l?latitude=" + latitude + "&longitude=" + longitude + "&minPrice=" + min_price + "&maxPrice=" + max_price
         print(url)
         return url
+
     elif website_name == "idealista":
         return
+
+    elif website_name == "pisos":
+        url = url_website + flat_type + "-" + format_address.replace("-","_") + "_capital"
+        print(url)
+        return url
+
     else:
         return

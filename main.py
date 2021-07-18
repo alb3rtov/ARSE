@@ -10,7 +10,9 @@ from scrapy.selector import Selector
 from scrapy.http import HtmlResponse
 
 class MainFrame:
+    """ Class that contains the main items of the frame """
     def __init__(self, master):
+        """ Creates the items that contains main frame """
         title_font = font.Font(size="18", family="Helvetica")
         main_font = font.Font(size="13", family="Helvetica")
 
@@ -54,7 +56,7 @@ class MainFrame:
         self.checkbox3.place(x=30,y=380)
 
         self.v_cb4 = tk.IntVar()
-        self.checkbox4= tk.Checkbutton(master, text="Pisos.com", variable=self.v_cb4, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox4= tk.Checkbutton(master, text="Pisos.com", variable=self.v_cb4, bg="white", highlightcolor="white", onvalue=1, offvalue=0)
         self.checkbox4.place(x=200,y=300)
 
         self.v_cb5 = tk.IntVar()
@@ -79,11 +81,39 @@ class MainFrame:
 
         self.checkboxes_list = [self.v_cb1, self.v_cb2, self.v_cb3, self.v_cb4, self.v_cb5, self.v_cb6, self.v_cb7, self.v_cb8, self.v_cb9]
 
-        self.button_search = tk.Button(master, font=title_font, text="BUSCAR", command = lambda: self.search_matches(self.entry_location.get(), self.clicked.get(), self.entry_max_price.get(), self.entry_min_price.get()))
+        self.button_search = tk.Button(master, font=title_font, text="BUSCAR", command = lambda: self.search_matches(self.entry_location.get(), self.clicked.get(), self.entry_max_price.get(), self.entry_min_price.get(), master))
         self.button_search.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
 
-    def search_matches(self, location, flat_type, max_price, min_price):
-        #Go to list of each site selected and scrap that website
+    def update(self, ind, frames, num_frames, canvas, master, cnt):
+        """ Update the canvas loading wheel gif """
+        frame = frames[ind]
+        ind += 1
+        if ind == num_frames:
+            ind = 0
+        canvas.create_image(60, 26, image=frame, anchor=tk.CENTER)
+        
+        if cnt == 100: # Here check if the search has ended
+            canvas.destroy()
+        else:
+            master.after(20, self.update, ind, frames, num_frames, canvas, master, cnt+1)
+
+    def create_loading_wheel(self, master, canvas):
+        """ Create a canvas with a loading wheel gif """
+        num_frames = 25
+        filename = "img/loading.gif"
+
+        frames = [tk.PhotoImage(file=filename, format='gif -index %i' %(i)).subsample(4) for i in range(num_frames)]
+        
+        canvas.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+        canvas.configure(bg="white", highlightbackground ="white")
+        master.after(0, self.update, 0, frames, num_frames, canvas, master, 0)
+
+    def search_matches(self, location, flat_type, max_price, min_price, master):
+        """ Generates the list of checked websites and call the crawler function """
+        canvas = tk.Canvas(width=120, height=52)
+
+        self.create_loading_wheel(master, canvas)
+
         url_location = 'https://nominatim.openstreetmap.org/search/' + urllib.parse.quote(location) +'?format=json'
         response = requests.get(url_location).json()
 
@@ -102,8 +132,9 @@ class MainFrame:
                 websites_list.append(crawler.def_url_sites_list[i])
 
         crawler.main_crawler(format_address, websites_list, response[0]["lat"], response[0]["lon"], flat_type, max_price, min_price)
-    
+
 def main():
+    """ Main function """
     root = tk.Tk()
     root.title("Buscador de alquiler de pisos")
     #root.iconbitmap("img/icaad.ico")
@@ -112,7 +143,6 @@ def main():
     root.configure(bg="white")
 
     main_frame = MainFrame(root)
-
     root.mainloop()
 
 if __name__ == "__main__":
