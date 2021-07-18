@@ -2,13 +2,8 @@ from os import close
 import tkinter as tk
 import tkinter.font as font
 import crawler
-import locations
-import requests
-import urllib.parse
+import json
 from tkinter import ttk
-from PIL import ImageTk,Image
-from scrapy.selector import Selector
-from scrapy.http import HtmlResponse
 
 class MainFrame:
     """ Class that contains the main items of the frame """
@@ -19,13 +14,18 @@ class MainFrame:
 
         self.lbl_title = tk.Label(master, font=title_font, bg="white", text="Buscador de alquiler de pisos")
         self.lbl_title.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
+        self.lbl_province = tk.Label(master, font=main_font, bg="white", text= "Provincia")
+        self.lbl_province.place(x=30,y=100)
 
-        self.lbl_ccaa = tk.Label(master, font=main_font, bg="white", text= "CCAA")
-        self.lbl_ccaa.place(x=30,y=100)
-        #self.entry_location = tk.Entry(master, font=main_font, width= 20, bd=2)
-        #self.entry_location.place(x=120,y=102)
+        with open("data/provincias.json", encoding="utf8") as json_file:
+            data = json.load(json_file)
 
-        self.ccaa_key_list, self.ccaa_value_list = locations.get_locations("https://apiv1.geoapi.es/comunidades?type=JSON&key=&sandbox=1", "CCOM", "COM")
+        self.ccaa_key_list = []
+        self.ccaa_value_list = []
+
+        for i in range(len(data)):
+            self.ccaa_key_list.append(data[i]["id"])
+            self.ccaa_value_list.append(data[i]["nm"])
 
         self.ccaa_var = tk.StringVar()
         self.ccaa_var.set(self.ccaa_value_list[0])
@@ -34,10 +34,9 @@ class MainFrame:
         self.dropdown_ccaa.configure(font=main_font)
         self.dropdown_ccaa.place(x=120,y=100)
 
-        self.lbl_province = tk.Label(master, font=main_font, bg="white", text= "Provincia")
-        self.lbl_province.place(x=30,y=140)
+        self.lbl_town = tk.Label(master, font=main_font, bg="white", text= "Municipio")
+        self.lbl_town.place(x=30,y=140)
 
-        self.province_key_list = []
         self.province_value_list = []
 
         self.province_var = tk.StringVar()
@@ -107,11 +106,17 @@ class MainFrame:
 
     def update_provinces_menu(self, *args):
         """ Update provinces menu based on selected CCAA """
+        self.province_value_list = []
+
         index = self.ccaa_value_list.index(self.ccaa_var.get())
         ccaa_index = self.ccaa_key_list[index]
         
-        url = "https://apiv1.geoapi.es/provincias?CCOM=" + ccaa_index + "&type=JSON&key=&sandbox=1"
-        self.province_key_list, self.province_value_list = locations.get_locations(url, "CPRO", "PRO")
+        with open("data/municipios.json", encoding="utf8") as json_file:
+            data = json.load(json_file)
+
+        for i in range(len(data)):
+            if data[i]["id"][0:2] == str(ccaa_index):
+                self.province_value_list.append(data[i]["nm"])
 
         self.dropdown_province.configure(values=self.province_value_list, state="readonly")
         self.province_var.set(self.province_value_list[0])
