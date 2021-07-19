@@ -38,7 +38,7 @@ next_page_index = {"milanuncios" : "&pagina=",
                 "vivados" : "?page="
 } 
 
-def main_crawler(format_address, website_list, flat_type, max_price, min_price):
+def main_crawler(town, province, website_list, flat_type, max_price, min_price):
     """ Request the HTML code of each listed website and extract the relevant information """
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
@@ -49,7 +49,7 @@ def main_crawler(format_address, website_list, flat_type, max_price, min_price):
         website_name = website_name.netloc[4:]
         website_name = website_name[:-4]
 
-        url = generate_url(website_list[i], format_address, website_name, flat_type, max_price, min_price)
+        url = generate_url(website_list[i], town, province, website_name, flat_type, max_price, min_price)
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -67,10 +67,10 @@ def main_crawler(format_address, website_list, flat_type, max_price, min_price):
         for zone, price in zip(zone_list, prices_list):
             print(zone.get_text() + " - " + price.get_text())
             
-def generate_url(url_website, format_address, website_name, flat_type, max_price, min_price):
+def generate_url(url_website, town, province, website_name, flat_type, max_price, min_price):
     """ Generate the main url based on each website """
     if website_name == "milanuncios":        
-        url = url_website + flat_type + "-en-" + format_address + "-" + format_address.replace("-","_") + "/" + "?fromSearch=1&desde=" + min_price + "&hasta=" + max_price
+        url = url_website + flat_type + "-en-" + town + "-" + province.replace("-","_") + "/" + "?fromSearch=1&desde=" + min_price + "&hasta=" + max_price + "&demanda=n"
         print(url)
         return url
 
@@ -78,10 +78,10 @@ def generate_url(url_website, format_address, website_name, flat_type, max_price
         if flat_type == "pisos":
             flat_type = "viviendas"
         
-        url_location = 'https://nominatim.openstreetmap.org/search/' + format_address +'?format=json'
+        url_location = 'https://nominatim.openstreetmap.org/search/' + town +'?format=json'
         response = requests.get(url_location).json()
 
-        url = url_website + flat_type + "/" + format_address + "-capital/todas-las-zonas/l?latitude=" + response[0]["lat"] + "&longitude=" + response[0]["lon"] + "&minPrice=" + min_price + "&maxPrice=" + max_price
+        url = url_website + flat_type + "/" + town + "-capital/todas-las-zonas/l?latitude=" + response[0]["lat"] + "&longitude=" + response[0]["lon"] + "&minPrice=" + min_price + "&maxPrice=" + max_price
         print(url)
         return url
 
@@ -89,13 +89,13 @@ def generate_url(url_website, format_address, website_name, flat_type, max_price
         return
 
     elif website_name == "pisos":
-        url = url_website + flat_type + "-" + format_address.replace("-","_") + "_capital"
+        url = url_website + flat_type + "-" + town.replace("-","_") + "_capital/desde-" + min_price + "/hasta-" + max_price + "/"
         print(url)
         return url
 
     elif website_name == "vivados":
         url_website = url_website.replace("com", "es")
-        url = url_website + flat_type + "-" + format_address
+        url = url_website + flat_type + "-" + town
         print(url)
         return url
 
