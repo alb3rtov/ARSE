@@ -2,6 +2,7 @@ import tkinter as tk
 import tkinter.font as font
 import crawler
 import json
+import os
 from tkinter import ttk
 from tkinter import messagebox
 
@@ -11,6 +12,7 @@ class MainFrame:
         """ Creates the items that contains main frame """
         title_font = font.Font(size="18", family="Helvetica")
         main_font = font.Font(size="13", family="Helvetica")
+        small_font = font.Font(size="10", family="Helvetica")
 
         self.lbl_title = tk.Label(master, font=title_font, bg="white", text="Buscador de alquiler de pisos")
         self.lbl_title.place(relx=0.5, rely=0.093, anchor=tk.CENTER)
@@ -57,11 +59,15 @@ class MainFrame:
         self.lbl_min_price.place(x=30,y=240)
         self.entry_min_price = tk.Entry(master, font=main_font, width= 20, bd=2)
         self.entry_min_price.place(x=180,y=242)
+        self.lbl_optional1 = tk.Label(master, font=small_font, bg="white", fg="gray", text= "(Opcional)")
+        self.lbl_optional1.place(x=370,y=242)
 
         self.lbl_max_price = tk.Label(master, font=main_font, bg="white", text= "Precio máximo (€)")
         self.lbl_max_price.place(x=30,y=280)
         self.entry_max_price = tk.Entry(master, font=main_font, width= 20, bd=2)
         self.entry_max_price.place(x=180,y=282)
+        self.lbl_optional2 = tk.Label(master, font=small_font, bg="white", fg="gray", text= "(Opcional)")
+        self.lbl_optional2.place(x=370,y=282)
 
         self.v_cb1 = tk.IntVar()
         self.checkbox1 = tk.Checkbutton(master, text="Milanuncios", variable=self.v_cb1, bg="white", onvalue=1, offvalue=0)
@@ -123,6 +129,7 @@ class MainFrame:
     
     def update_loading_wheel(self, ind, frames, num_frames, canvas, master, cnt):
         """ Update the canvas loading wheel gif """
+        global search_completed
         frame = frames[ind]
         ind += 1
         if ind == num_frames:
@@ -181,7 +188,12 @@ def main():
     """ Create main frame and set configuration of frame """
     root = tk.Tk()
     root.title("Buscador de alquiler de pisos")
-    root.iconbitmap("img/icon.ico")
+    
+    if os.name == "nt":
+        root.iconbitmap("img/icon.ico")
+    else:
+        root.iconbitmap("@img/icon.xbm")
+    
     root.geometry("500x560")
     root.resizable(False, False)
     root.configure(bg="white")

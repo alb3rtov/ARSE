@@ -3,8 +3,9 @@ import requests
 from urllib.request import Request, urlopen
 from urllib.request import HTTPError
 from bs4 import BeautifulSoup
+from tkinter import messagebox
 
-""" Global lists and dics """ 
+""" Global lists and dics """
 def_url_sites_list = ["https://www.milanuncios.com/alquiler-de-",
                     "https://www.fotocasa.com/es/alquiler/",
                     "https://www.idealista.com/alquiler-viviendas/",
@@ -44,6 +45,8 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
     }
 
+    num_results = 0
+
     for i in range(len(website_list)):
         website_name = urllib.parse.urlparse(website_list[i])
         website_name = website_name.netloc[4:]
@@ -64,9 +67,14 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price):
         zone_list = soup.findAll(zone_tag,{"class":zone_class})
         prices_list = soup.findAll(price_tag,{"class":price_class})
 
+        num_results += len(zone_list)
+
         for zone, price in zip(zone_list, prices_list):
-            print(zone.get_text() + " - " + price.get_text())
-            
+            print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
+
+    messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
+
+
 def generate_url(url_website, town, province, website_name, flat_type, max_price, min_price):
     """ Generate the main url based on each website """
     if website_name == "milanuncios":        
