@@ -3,6 +3,7 @@ import tkinter.font as font
 import crawler
 import json
 from tkinter import ttk
+from tkinter import messagebox
 
 class MainFrame:
     """ Class that contains the main items of the frame """
@@ -12,7 +13,7 @@ class MainFrame:
         main_font = font.Font(size="13", family="Helvetica")
 
         self.lbl_title = tk.Label(master, font=title_font, bg="white", text="Buscador de alquiler de pisos")
-        self.lbl_title.place(relx=0.5, rely=0.1, anchor=tk.CENTER)
+        self.lbl_title.place(relx=0.5, rely=0.093, anchor=tk.CENTER)
         self.lbl_province = tk.Label(master, font=main_font, bg="white", text= "Provincia")
         self.lbl_province.place(x=30,y=100)
 
@@ -100,7 +101,7 @@ class MainFrame:
 
         self.checkboxes_list = [self.v_cb1, self.v_cb2, self.v_cb3, self.v_cb4, self.v_cb5, self.v_cb6, self.v_cb7, self.v_cb8, self.v_cb9]
 
-        self.button_search = tk.Button(master, font=title_font, text="BUSCAR", command = lambda: self.search_matches(self.town_var.get(), self.province_var.get(), self.housing_var.get(), self.entry_max_price.get(), self.entry_min_price.get(), master))
+        self.button_search = tk.Button(master, font=title_font, relief='groove', text="BUSCAR", command = lambda: self.search_matches(self.town_var.get(), self.province_var.get(), self.housing_var.get(), self.entry_max_price.get(), self.entry_min_price.get(), master))
         self.button_search.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
 
     def update_towns_menu(self, *args):
@@ -147,26 +148,34 @@ class MainFrame:
 
     def search_matches(self, town, province, flat_type, max_price, min_price, master):
         """ Generates the list of checked websites and call the crawler function """
-        self.create_loading_wheel(master)
 
-        province = province.lower()
-        province = province.replace(" ","-")
+        if len(town) == 0 or len(province) == 0:
+            messagebox.showerror("Campos incompletos","Selecciona una provincia y municipio")
+        else:
+            at_least_one_ws_selected = False
+            checked_sites_list = []
 
-        town = town.lower()
-        town = town.replace(" ", "-")
+            for cb in self.checkboxes_list:
+                checked_sites_list.append(cb.get())
 
-        checked_sites_list = []
+            websites_list = []
 
-        for cb in self.checkboxes_list:
-            checked_sites_list.append(cb.get())
+            for i in range(len(checked_sites_list)):
+                if checked_sites_list[i] == 1:
+                    websites_list.append(crawler.def_url_sites_list[i])
+                    at_least_one_ws_selected = True
+            
+            if at_least_one_ws_selected:
+                province = province.lower()
+                province = province.replace(" ","-")
 
-        websites_list = []
+                town = town.lower()
+                town = town.replace(" ", "-")
 
-        for i in range(len(checked_sites_list)):
-            if checked_sites_list[i] == 1:
-                websites_list.append(crawler.def_url_sites_list[i])
-
-        crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price)
+                self.create_loading_wheel(master)
+                crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price)
+            else:
+                messagebox.showerror("Campos incompletos","Selecciona al menos un sitio web para realizar las búsquedas")
 
 def main():
     """ Create main frame and set configuration of frame """
