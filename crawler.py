@@ -35,11 +35,10 @@ zones_tag = {"milanuncios" : "a aditem-detail-title",
 
 next_page_index = {"milanuncios" : "&pagina=",
                 "fotocasa" : "/l",
-                "pisos" : "/",
                 "vivados" : "?page="
 } 
 
-def main_crawler(town, province, website_list, flat_type, max_price, min_price):
+def main_crawler(town, province, website_list, flat_type, max_price, min_price, num_page_search):
     """ Request the HTML code of each listed website and extract the relevant information """
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
@@ -51,34 +50,61 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price):
         website_name = urllib.parse.urlparse(website_list[i])
         website_name = website_name.netloc[4:]
         website_name = website_name[:-4]
-
+        
         url = generate_url(website_list[i], town, province, website_name, flat_type, max_price, min_price)
-        response = requests.get(url, headers=headers)
-        soup = BeautifulSoup(response.content, 'html.parser')
+        first_iteration = True
+        for j in range(int(num_page_search)):
+            if first_iteration:
+                first_iteration = False
+            else:
+                url = generate_next_url(url, website_name, str(j+1))
 
-        prices_tags_list = prices_tag.get(website_name).split()
-        price_tag = prices_tags_list[0]
-        price_class = prices_tags_list[1]
+            response = requests.get(url, headers=headers)
+            soup = BeautifulSoup(response.content, 'html.parser')
 
-        zones_tag_list = zones_tag.get(website_name).split()
-        zone_tag = zones_tag_list[0]
-        zone_class = zones_tag_list[1]
+            prices_tags_list = prices_tag.get(website_name).split()
+            price_tag = prices_tags_list[0]
+            price_class = prices_tags_list[1]
 
-        zone_list = soup.findAll(zone_tag,{"class":zone_class})
-        prices_list = soup.findAll(price_tag,{"class":price_class})
+            zones_tag_list = zones_tag.get(website_name).split()
+            zone_tag = zones_tag_list[0]
+            zone_class = zones_tag_list[1]
 
-        num_results += len(zone_list)
+            zone_list = soup.findAll(zone_tag,{"class":zone_class})
+            prices_list = soup.findAll(price_tag,{"class":price_class})
 
-        for zone, price in zip(zone_list, prices_list):
-            print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
+            num_results += len(zone_list)
 
+            for zone, price in zip(zone_list, prices_list):
+                #print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
+                print(zone.get_text() + " - " + price.get_text())
+    
     messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
 
+def generate_next_url(url, website_name, page):
+    if website_name == "milanuncios":
+        url = url + next_page_index.get(website_name) + page
+        print(url)
+        return url
+    elif website_name == "fotocasa":
+        return
+    elif website_name == "idealista":
+        return
+    elif website_name == "pisos":
+        url = url + page + "/"
+        print(url)
+        return url
+    elif website_name == "vivados":
+        url = url + next_page_index.get(website_name) + page
+        print(url)
+        return url
+    else:
+        return
 
 def generate_url(url_website, town, province, website_name, flat_type, max_price, min_price):
     """ Generate the main url based on each website """
     if website_name == "milanuncios":        
-        url = url_website + flat_type + "-en-" + town + "-" + province.replace("-","_") + "/" + "?fromSearch=1&desde=" + min_price + "&hasta=" + max_price + "&demanda=n"
+        url = url_website + flat_type + "-en-" + town + "-" + province.replace("-","_") + "/" + "?fromSearch=1&desde=" + min_price + "&hasta=" + max_price + "&demanda=n/"
         print(url)
         return url
 
@@ -103,7 +129,7 @@ def generate_url(url_website, town, province, website_name, flat_type, max_price
 
     elif website_name == "vivados":
         url_website = url_website.replace("com", "es")
-        url = url_website + flat_type + "-" + town
+        url = url_website + flat_type + "-desde-" + min_price + "-hasta-" + max_price + "-euros-" + town
         print(url)
         return url
 

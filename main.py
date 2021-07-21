@@ -125,17 +125,17 @@ class MainFrame:
 
         self.checkboxes_list = [self.v_cb1, self.v_cb2, self.v_cb3, self.v_cb4, self.v_cb5, self.v_cb6, self.v_cb7, self.v_cb8, self.v_cb9]
 
-        self.button_search = tk.Button(master, font=title_font, relief='groove', text="BUSCAR", command = lambda: self.search_matches(self.town_var.get(), self.province_var.get(), self.housing_var.get(), self.entry_max_price.get(), self.entry_min_price.get(), master))
+        self.button_search = tk.Button(master, font=title_font, relief='groove', text="BUSCAR", command = lambda: self.search_matches(self.town_var.get(), self.province_var.get(), self.housing_var.get(), self.entry_max_price.get(), self.entry_min_price.get(), self.num_page_search.get(), master))
         self.button_search.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
 
         self.info_label = tk.Label(master, font=small_font, fg="gray", bg="white", text="",anchor='w', justify=tk.LEFT)
-        self.info_label.place(x=200, y=350)
+        self.info_label.place(x=150, y=350)
 
     def on_enter(self, event):
-        self.info_label.configure(bg="gray90", relief=tk.GROOVE, text=" Este campo indica el número de \n páginas que se analizarán por cada \n uno de los sitios web seleccionados ")
+        self.info_label.configure(bg="gray90", height=5, relief=tk.GROOVE, text="  Este campo indica el número de páginas que se  \n  analizarán por cada uno de los sitios web marcados.  \n  Por cada número de página se encontrarán hasta  \n  un máximo de 30 resultados para cada sitio web.  ")
 
     def on_leave(self, enter):
-        self.info_label.configure(bg="white",relief=tk.FLAT, text="")
+        self.info_label.configure(bg="white", height=0,relief=tk.FLAT, text="")
 
     def update_towns_menu(self, *args):
         """ Update town menu based on selected province """
@@ -180,7 +180,7 @@ class MainFrame:
 
         master.after(0, self.update_loading_wheel, 0, frames, num_frames, canvas, master, 0)
 
-    def search_matches(self, town, province, flat_type, max_price, min_price, master):
+    def search_matches(self, town, province, flat_type, max_price, min_price, num_page_search, master):
         """ Generates the list of checked websites and call the crawler function """
 
         if len(town) == 0 or len(province) == 0:
@@ -207,7 +207,7 @@ class MainFrame:
                 town = town.replace(" ", "-")
 
                 self.create_loading_wheel(master)
-                crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price)
+                crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search)
             else:
                 messagebox.showerror("Campos incompletos","Selecciona al menos un sitio web para realizar las búsquedas")
 
