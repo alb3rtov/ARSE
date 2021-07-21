@@ -5,6 +5,7 @@ import json
 import os
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 from PIL import ImageTk,Image
 
 class MainFrame:
@@ -16,7 +17,7 @@ class MainFrame:
         small_font = font.Font(size="10", family="Helvetica")
 
         self.lbl_title = tk.Label(master, font=title_font, bg="white", text="Buscador de alquiler de pisos")
-        self.lbl_title.place(relx=0.5, rely=0.093, anchor=tk.CENTER)
+        self.lbl_title.place(relx=0.5, rely=0.092, anchor=tk.CENTER)
         self.lbl_province = tk.Label(master, font=main_font, bg="white", text= "Provincia")
         self.lbl_province.place(x=30,y=100)
 
@@ -126,15 +127,34 @@ class MainFrame:
         self.checkboxes_list = [self.v_cb1, self.v_cb2, self.v_cb3, self.v_cb4, self.v_cb5, self.v_cb6, self.v_cb7, self.v_cb8, self.v_cb9]
 
         self.button_search = tk.Button(master, font=title_font, relief='groove', text="BUSCAR", command = lambda: self.search_matches(self.town_var.get(), self.province_var.get(), self.housing_var.get(), self.entry_max_price.get(), self.entry_min_price.get(), self.num_page_search.get(), master))
-        self.button_search.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+        self.button_search.place(x=250, y=600, anchor=tk.CENTER)
 
         self.info_label = tk.Label(master, font=small_font, fg="gray", bg="white", text="",anchor='w', justify=tk.LEFT)
         self.info_label.place(x=150, y=350)
 
+        self.dir_entry = tk.Entry(master, bd=2, width=47,font = main_font, state="readonly")
+        self.dir_entry.place(x=35,y=520, height=30)
+
+        self.dir_image = Image.open("img/dir.png")
+        self.dir_image = self.dir_image.resize((27, 23), Image.ANTIALIAS)
+        self.dir_icon = ImageTk.PhotoImage(self.dir_image)
+        self.dir_button = tk.Button(master, bg='gray94', relief='groove', borderwidth=0, cursor='hand2', image=self.dir_icon, command=self.browse_dir)
+        self.dir_button.place(x=430,y=522) 
+
+    def browse_dir(self):
+        """ Request directory for the XLSX file """
+        self.dir_entry.configure(state="normal")
+        self.dir_button.configure(bg="white")
+        filename = filedialog.askdirectory()
+        filename = filename + "/pisos.xlsx"
+        self.dir_entry.insert(tk.END, filename)
+
     def on_enter(self, event):
+        """ Show help information """
         self.info_label.configure(bg="gray90", height=5, relief=tk.GROOVE, text="  Este campo indica el número de páginas que se  \n  analizarán por cada uno de los sitios web marcados.  \n  Por cada número de página se encontrarán hasta  \n  un máximo de 30 resultados para cada sitio web.  ")
 
     def on_leave(self, enter):
+        """ Hide help information """
         self.info_label.configure(bg="white", height=0,relief=tk.FLAT, text="")
 
     def update_towns_menu(self, *args):
@@ -175,7 +195,7 @@ class MainFrame:
 
         frames = [tk.PhotoImage(file=filename, format='gif -index %i' %(i)).subsample(4) for i in range(num_frames)]
         canvas = tk.Canvas(width=120, height=52)
-        canvas.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+        canvas.place(x=250, y=600, anchor=tk.CENTER)
         canvas.configure(bg="white", highlightbackground ="white")
 
         master.after(0, self.update_loading_wheel, 0, frames, num_frames, canvas, master, 0)
@@ -221,7 +241,7 @@ def main():
     else:
         root.iconbitmap("@img/icon.xbm")
     
-    root.geometry("500x600")
+    root.geometry("500x650")
     root.resizable(False, False)
     root.configure(bg="white")
 

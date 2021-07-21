@@ -36,7 +36,7 @@ zones_tag = {"milanuncios" : "a aditem-detail-title",
 next_page_index = {"milanuncios" : "&pagina=",
                 "fotocasa" : "/l",
                 "vivados" : "?page="
-} 
+}
 
 def main_crawler(town, province, website_list, flat_type, max_price, min_price, num_page_search):
     """ Request the HTML code of each listed website and extract the relevant information """
@@ -46,6 +46,7 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
 
     num_results = 0
 
+    # Loop for websites selected by user
     for i in range(len(website_list)):
         website_name = urllib.parse.urlparse(website_list[i])
         website_name = website_name.netloc[4:]
@@ -53,15 +54,23 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
         
         url = generate_url(website_list[i], town, province, website_name, flat_type, max_price, min_price)
         first_iteration = True
+
+        # If user select 6 o more pages set a big number for get all possible results
+        if num_page_search == "6 o más":
+            num_page_search = 9999
+
+        # Loop for the num of pages selected
         for j in range(int(num_page_search)):
             if first_iteration:
                 first_iteration = False
             else:
                 url = generate_next_url(url, website_name, str(j+1))
 
+            # Request and get HTML code
             response = requests.get(url, headers=headers)
             soup = BeautifulSoup(response.content, 'html.parser')
 
+            # Get appropriate tags for website
             prices_tags_list = prices_tag.get(website_name).split()
             price_tag = prices_tags_list[0]
             price_class = prices_tags_list[1]
@@ -70,6 +79,7 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
             zone_tag = zones_tag_list[0]
             zone_class = zones_tag_list[1]
 
+            # Find necesarry tags
             zone_list = soup.findAll(zone_tag,{"class":zone_class})
             prices_list = soup.findAll(price_tag,{"class":price_class})
 
@@ -82,6 +92,7 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
     messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
 
 def generate_next_url(url, website_name, page):
+    """ Generate url for the next page of a given website """
     if website_name == "milanuncios":
         url = url + next_page_index.get(website_name) + page
         print(url)
