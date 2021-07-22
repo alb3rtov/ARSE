@@ -17,7 +17,10 @@ class MainFrame:
         small_font = font.Font(size="10", family="Helvetica")
 
         self.lbl_title = tk.Label(master, font=title_font, bg="white", text="Buscador de alquiler de pisos")
-        self.lbl_title.place(relx=0.5, rely=0.092, anchor=tk.CENTER)
+        self.lbl_title.place(relx=0.5, rely=0.08, anchor=tk.CENTER)
+
+        self.error_label_province = tk.Label(master, width=44, height=2, bg="IndianRed1")
+
         self.lbl_province = tk.Label(master, font=main_font, bg="white", text= "Provincia")
         self.lbl_province.place(x=30,y=100)
 
@@ -88,6 +91,8 @@ class MainFrame:
         self.info_icon_label.bind("<Enter>", self.on_enter)
         self.info_icon_label.bind("<Leave>", self.on_leave)
 
+        self.error_label_websites = tk.Label(master, bg="IndianRed1", width=65, height=8)
+
         self.v_cb1 = tk.IntVar()
         self.checkbox1 = tk.Checkbutton(master, text="Milanuncios", variable=self.v_cb1, bg="white", onvalue=1, offvalue=0)
         self.checkbox1.place(x=30,y=380)
@@ -124,13 +129,13 @@ class MainFrame:
         self.checkbox9= tk.Checkbutton(master, text="Departiculares", variable=self.v_cb9, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
         self.checkbox9.place(x=370,y=460)
 
-        self.checkboxes_list = [self.v_cb1, self.v_cb2, self.v_cb3, self.v_cb4, self.v_cb5, self.v_cb6, self.v_cb7, self.v_cb8, self.v_cb9]
+        self.checkboxes_list = [self.checkbox1, self.checkbox2, self.checkbox3, self.checkbox4, self.checkbox5, self.checkbox6, self.checkbox7, self.checkbox8, self.checkbox9]
+        self.checkboxes_list_var = [self.v_cb1, self.v_cb2, self.v_cb3, self.v_cb4, self.v_cb5, self.v_cb6, self.v_cb7, self.v_cb8, self.v_cb9]
 
         self.button_search = tk.Button(master, font=title_font, relief='groove', text="BUSCAR", command = lambda: self.search_matches(self.town_var.get(), self.province_var.get(), self.housing_var.get(), self.entry_max_price.get(), self.entry_min_price.get(), self.num_page_search.get(), master))
         self.button_search.place(x=250, y=600, anchor=tk.CENTER)
 
-        self.info_label = tk.Label(master, font=small_font, fg="gray", bg="white", text="",anchor='w', justify=tk.LEFT)
-        self.info_label.place(x=150, y=350)
+        self.info_label = tk.Label(master, font=small_font, fg="gray", bg="gray90", height=5, relief=tk.GROOVE, text="  Este campo indica el número de páginas que se  \n  analizarán por cada uno de los sitios web marcados.  \n  Por cada número de página se encontrarán hasta  \n  un máximo de 30 resultados para cada sitio web.  ",anchor='w', justify=tk.LEFT)
 
         self.dir_entry = tk.Entry(master, bd=2, width=47,font = main_font, state="readonly")
         self.dir_entry.place(x=35,y=520, height=30)
@@ -143,19 +148,23 @@ class MainFrame:
 
     def browse_dir(self):
         """ Request directory for the XLSX file """
-        self.dir_entry.configure(state="normal")
-        self.dir_button.configure(bg="white")
-        filename = filedialog.askdirectory()
-        filename = filename + "/pisos.xlsx"
-        self.dir_entry.insert(tk.END, filename)
+        curr_directory = os.getcwd()
+        filename = filedialog.askdirectory(initialdir = curr_directory)
+
+        if len(filename) != 0:
+            self.dir_entry.delete(0, tk.END)
+            self.dir_entry.configure(state="normal")
+            self.dir_button.configure(bg="white")
+            filename = filename + "/pisos.xlsx"
+            self.dir_entry.insert(tk.END, filename)
 
     def on_enter(self, event):
         """ Show help information """
-        self.info_label.configure(bg="gray90", height=5, relief=tk.GROOVE, text="  Este campo indica el número de páginas que se  \n  analizarán por cada uno de los sitios web marcados.  \n  Por cada número de página se encontrarán hasta  \n  un máximo de 30 resultados para cada sitio web.  ")
+        self.info_label.place(x=150, y=350)
 
     def on_leave(self, enter):
         """ Hide help information """
-        self.info_label.configure(bg="white", height=0,relief=tk.FLAT, text="")
+        self.info_label.place_forget()
 
     def update_towns_menu(self, *args):
         """ Update town menu based on selected province """
@@ -200,16 +209,24 @@ class MainFrame:
 
         master.after(0, self.update_loading_wheel, 0, frames, num_frames, canvas, master, 0)
 
+    def change_bg_cb_color(self, color):
+        for cb in self.checkboxes_list:
+            cb.configure(bg=color)
+
     def search_matches(self, town, province, flat_type, max_price, min_price, num_page_search, master):
         """ Generates the list of checked websites and call the crawler function """
 
-        if len(town) == 0 or len(province) == 0:
-            messagebox.showerror("Campos incompletos","Selecciona una provincia y municipio")
+        if len(province) == 0:
+            self.lbl_province.configure(bg="IndianRed1")
+            self.error_label_province.place(x=21,y=95)
+            messagebox.showerror("Campos incompletos","Selecciona una provincia")
+            self.lbl_province.configure(bg="white")
+            self.error_label_province.place_forget()
         else:
             at_least_one_ws_selected = False
             checked_sites_list = []
 
-            for cb in self.checkboxes_list:
+            for cb in self.checkboxes_list_var:
                 checked_sites_list.append(cb.get())
 
             websites_list = []
@@ -226,10 +243,23 @@ class MainFrame:
                 town = town.lower()
                 town = town.replace(" ", "-")
 
-                self.create_loading_wheel(master)
-                crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search)
+                if len(self.dir_entry.get()) != 0:
+                    self.create_loading_wheel(master)
+                    crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search)
+                else:
+                    self.dir_entry.configure(state="normal")
+                    self.dir_entry.configure(bg="IndianRed1")
+                    self.dir_button.configure(bg="IndianRed1")
+                    messagebox.showerror("Campos incompletos","Debes de indicar una carpeta para\nguardar el archivo XLSX (Excel)")
+                    self.dir_entry.configure(bg="white")
+                    self.dir_entry.configure(state="readonly")
+                    self.dir_button.configure(bg="gray94")
             else:
+                self.change_bg_cb_color("IndianRed1")
+                self.error_label_websites.place(x=21,y=370)
                 messagebox.showerror("Campos incompletos","Selecciona al menos un sitio web para realizar las búsquedas")
+                self.change_bg_cb_color("white")
+                self.error_label_websites.place_forget()
 
 def main():
     """ Create main frame and set configuration of frame """
