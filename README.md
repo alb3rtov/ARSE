@@ -7,7 +7,7 @@ Use `pip install -r requeriments.txt` to install all the required modules.
 
 ## Install Tkinter
 ### Windows
-Installing _python3_ from **[python.org](https://www.python.org/)** will automatically install Tcl/Tk, which of course, is needed by Tkinter.
+Installing _python3_ from <a href="https://www.python.org/" target="_blank">**python.org**</a> will automatically install Tcl/Tk, which of course, is needed by Tkinter.
 
 ### Linux
 Debian/Ubuntu distributions:
