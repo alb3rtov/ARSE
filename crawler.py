@@ -1,5 +1,8 @@
 import urllib.parse
 import requests
+import xlsxwriter
+import os
+import sys
 from urllib.request import Request, urlopen
 from urllib.request import HTTPError
 from bs4 import BeautifulSoup
@@ -38,7 +41,7 @@ next_page_index = {"milanuncios" : "&pagina=",
                 "vivados" : "?page="
 }
 
-def main_crawler(town, province, website_list, flat_type, max_price, min_price, num_page_search):
+def main_crawler(town, province, website_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master):
     """ Request the HTML code of each listed website and extract the relevant information """
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
@@ -90,6 +93,28 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
                 print(zone.get_text() + " - " + price.get_text())
     
     messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
+    
+    if num_results != 0:
+        generate_xlsxfile(xlsxfile_path)
+        open_xlsxfile(xlsxfile_path, master)
+    else:
+        generate_xlsxfile(xlsxfile_path)
+        open_xlsxfile(xlsxfile_path, master)
+
+def open_xlsxfile(xlsxfile_path, master):
+    """ Ask if user want to open XLSX file """
+    openfile = messagebox.askquestion("Archivo XLSX generado","Se ha generado un archivo XLSX con los resultados encontrados (" + xlsxfile_path + "). ¿Deseas abrir el archivo?")
+    
+    if openfile == "yes":
+        master.destroy()
+        os.system(xlsxfile_path)
+
+def generate_xlsxfile(xlsxfile_path):
+    """ Generate XLSX file with the results found """
+    workbook = xlsxwriter.Workbook(xlsxfile_path)
+    worksheet = workbook.add_worksheet()
+
+    workbook.close()
 
 def generate_next_url(url, website_name, page):
     """ Generate url for the next page of a given website """

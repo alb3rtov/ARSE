@@ -7,6 +7,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
 from PIL import ImageTk,Image
+from pathlib import Path
 
 class MainFrame:
     """ Class that contains the main items of the frame """
@@ -132,18 +133,19 @@ class MainFrame:
         self.checkboxes_list = [self.checkbox1, self.checkbox2, self.checkbox3, self.checkbox4, self.checkbox5, self.checkbox6, self.checkbox7, self.checkbox8, self.checkbox9]
         self.checkboxes_list_var = [self.v_cb1, self.v_cb2, self.v_cb3, self.v_cb4, self.v_cb5, self.v_cb6, self.v_cb7, self.v_cb8, self.v_cb9]
 
-        self.button_search = tk.Button(master, font=title_font, relief='groove', text="BUSCAR", command = lambda: self.search_matches(self.town_var.get(), self.province_var.get(), self.housing_var.get(), self.entry_max_price.get(), self.entry_min_price.get(), self.num_page_search.get(), master))
+        self.button_search = tk.Button(master, font=title_font, relief='groove', text="BUSCAR", command = lambda: self.search_matches(self.town_var.get(), self.province_var.get(), self.housing_var.get(), self.entry_max_price.get(), self.entry_min_price.get(), self.num_page_search.get(), self.dir_entry.get(), master))
         self.button_search.place(x=250, y=600, anchor=tk.CENTER)
 
         self.info_label = tk.Label(master, font=small_font, fg="gray", bg="gray90", height=5, relief=tk.GROOVE, text="  Este campo indica el número de páginas que se  \n  analizarán por cada uno de los sitios web marcados.  \n  Por cada número de página se encontrarán hasta  \n  un máximo de 30 resultados para cada sitio web.  ",anchor='w', justify=tk.LEFT)
 
-        self.dir_entry = tk.Entry(master, bd=2, width=47,font = main_font, state="readonly")
+        self.dir_entry = tk.Entry(master, bd=2, width=47,font = main_font)
+        self.dir_entry.insert(tk.END, os.getcwd() + "\pisos.xlsx")
         self.dir_entry.place(x=35,y=520, height=30)
 
         self.dir_image = Image.open("img/dir.png")
         self.dir_image = self.dir_image.resize((27, 23), Image.ANTIALIAS)
         self.dir_icon = ImageTk.PhotoImage(self.dir_image)
-        self.dir_button = tk.Button(master, bg='gray94', relief='groove', borderwidth=0, cursor='hand2', image=self.dir_icon, command=self.browse_dir)
+        self.dir_button = tk.Button(master, bg='white', relief='groove', borderwidth=0, cursor='hand2', image=self.dir_icon, command=self.browse_dir)
         self.dir_button.place(x=430,y=522) 
 
     def browse_dir(self):
@@ -153,7 +155,6 @@ class MainFrame:
 
         if len(filename) != 0:
             self.dir_entry.delete(0, tk.END)
-            self.dir_entry.configure(state="normal")
             self.dir_button.configure(bg="white")
             filename = filename + "/pisos.xlsx"
             self.dir_entry.insert(tk.END, filename)
@@ -209,17 +210,43 @@ class MainFrame:
 
         master.after(0, self.update_loading_wheel, 0, frames, num_frames, canvas, master, 0)
 
-    def change_bg_cb_color(self, color):
+    def change_cb_color(self, bg, fg):
+        """ Change checkboxes bg and fg color """
         for cb in self.checkboxes_list:
-            cb.configure(bg=color)
+            cb.configure(bg=bg, fg=fg)
 
-    def search_matches(self, town, province, flat_type, max_price, min_price, num_page_search, master):
+    def get_xlsxpath_and_name(self, xlsxfile_path):
+        size = len(xlsxfile_path)
+        file_length = 0
+        for i in range(1, size):
+            if xlsxfile_path[size-i] == "\\":
+                break
+            file_length += 1
+
+        return xlsxfile_path[:-file_length], xlsxfile_path[size-file_length:]
+
+    def rename_xlsxfile(self, xlsxpath, xlsxfilename, xlsxextension):
+        cnt = 1
+        while True:
+            aux_xlsxfilename = xlsxfilename + str(cnt)
+            xlsx_full_filename = aux_xlsxfilename + "." + xlsxextension
+            def_xlsxpath = xlsxpath + xlsx_full_filename
+            p = Path(def_xlsxpath)
+            
+            if not p.exists():
+                break
+            else:
+                cnt += 1
+
+        return def_xlsxpath
+
+    def search_matches(self, town, province, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master):
         """ Generates the list of checked websites and call the crawler function """
 
         if len(province) == 0:
             self.lbl_province.configure(bg="IndianRed1")
             self.error_label_province.place(x=21,y=95)
-            messagebox.showerror("Campos incompletos","Selecciona una provincia")
+            messagebox.showerror("Campos incompletos","Debes seleccionar una provincia donde realizar las búsquedas")
             self.lbl_province.configure(bg="white")
             self.error_label_province.place_forget()
         else:
@@ -244,21 +271,31 @@ class MainFrame:
                 town = town.replace(" ", "-")
 
                 if len(self.dir_entry.get()) != 0:
-                    self.create_loading_wheel(master)
-                    crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search)
+                    p = Path(xlsxfile_path)
+                    if p.exists():
+                        res = messagebox.askquestion("El archivo ya existe","El archivo " + xlsxfile_path + " ya existe. ¿Desea crear otro archivo?")
+                        if res == "yes":
+                            xlsxpath, xlsxfilename = self.get_xlsxpath_and_name(xlsxfile_path)
+                            full_filename = xlsxfilename.split(".")
+                            self.dir_entry.delete(0, tk.END)
+                            self.dir_entry.insert(tk.END, self.rename_xlsxfile(xlsxpath, full_filename[0], full_filename[1]))
+                            self.create_loading_wheel(master)
+                            crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, self.dir_entry.get(), master)
+                    else:
+                        self.create_loading_wheel(master)
+                        crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master)
                 else:
                     self.dir_entry.configure(state="normal")
                     self.dir_entry.configure(bg="IndianRed1")
                     self.dir_button.configure(bg="IndianRed1")
                     messagebox.showerror("Campos incompletos","Debes de indicar una carpeta para\nguardar el archivo XLSX (Excel)")
                     self.dir_entry.configure(bg="white")
-                    self.dir_entry.configure(state="readonly")
-                    self.dir_button.configure(bg="gray94")
+                    self.dir_button.configure(bg="white")
             else:
-                self.change_bg_cb_color("IndianRed1")
+                self.change_cb_color("IndianRed1","white")
                 self.error_label_websites.place(x=21,y=370)
-                messagebox.showerror("Campos incompletos","Selecciona al menos un sitio web para realizar las búsquedas")
-                self.change_bg_cb_color("white")
+                messagebox.showerror("Campos incompletos","Selecciona al menos un sitio web donde realizar las búsquedas")
+                self.change_cb_color("white","black")
                 self.error_label_websites.place_forget()
 
 def main():
