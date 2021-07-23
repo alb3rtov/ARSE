@@ -23,7 +23,7 @@ First move to **ARSE** directory typing `cd ARSE` and then execute the program u
 First move to **ARSE** directory typing `cd ARSE` and then execute the program using `python3 main.py`
 
 ## Compilation
-If you want to compile the python code you need to use **[pyinstaller](https://www.pyinstaller.org/)**, so first you need to download the **pyinstaller** module for your OS.
+If you want to compile the python code you need to use **[pyinstaller](https://www.pyinstaller.org/)**, so first you need to download the **pyinstaller** module for your OS (it will install automatically if you use _[requeriments.txt](https://github.com/alb3rtov/ARSE/blob/main/requeriments.txt)_)
 
 Type this command to compile the code: `pyinstaller.exe --onefile --windowed --name ARSE --icon=img/icon.icon main.py`
 
@@ -34,7 +34,7 @@ Here is an already compiled version: https://drive.google.com/drive/folders/1CIm
 
 ## Crawling websites and generate XLSX
 This program use **[requests](https://docs.python-requests.org/en/master/)** and **[BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)** to scrap the websites and get all the information. In order to save this information, the **[xlsxwriter](https://xlsxwriter.readthedocs.io/)** module is used. The fields that contain the XLSX file are: _apartment address, price, telephone number, website URL, real estate agency or private and other info_.
-<!--- (I recommend reading this [article](https://www.blog.datahut.co/post/is-web-scraping-legal) on the legality of web crawling) -->
+I recommend reading this [article](https://www.blog.datahut.co/post/is-web-scraping-legal) on the legality of web crawling.
 
 
 ## Why only works for Spain region?
