@@ -88,9 +88,9 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
 
             num_results += len(zone_list)
 
-            for zone, price in zip(zone_list, prices_list):
+            #for zone, price in zip(zone_list, prices_list):
                 #print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
-                print(zone.get_text() + " - " + price.get_text())
+            #    print(zone.get_text() + " - " + price.get_text())
     
     # Check if results have been found
     if num_results != 0:
@@ -107,6 +107,7 @@ def open_xlsxfile(xlsxfile_path, master):
     if openfile == "yes":
         master.destroy()
         os.system(xlsxfile_path)
+        sys.exit()
 
 def generate_xlsxfile(xlsxfile_path, zone_list, prices_list):
     """ Generate XLSX file with the results found """
@@ -117,7 +118,7 @@ def generate_xlsxfile(xlsxfile_path, zone_list, prices_list):
     col = 0
     bold = workbook.add_format({'bold': True})
     money = workbook.add_format({'num_format': '$#,##0'})
-    
+
     # Write titles
     for title in titles:
         worksheet.write(0, col, title, bold)
