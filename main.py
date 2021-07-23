@@ -36,7 +36,6 @@ class MainFrame:
             self.province_value_list.append(data[i]["nm"])
 
         self.province_var = tk.StringVar()
-        #self.province_var.set(self.province_value_list[0])
         self.province_var.trace("w", self.update_towns_menu)
         self.dropdown_province = ttk.Combobox(master, width=20, state="readonly", textvariable=self.province_var, values=self.province_value_list)
         self.dropdown_province.configure(font=main_font)
@@ -216,6 +215,7 @@ class MainFrame:
             cb.configure(bg=bg, fg=fg)
 
     def get_xlsxpath_and_name(self, xlsxfile_path):
+        """ Get absolute path and name of XLSX file """
         size = len(xlsxfile_path)
         file_length = 0
         for i in range(1, size):
@@ -226,6 +226,7 @@ class MainFrame:
         return xlsxfile_path[:-file_length], xlsxfile_path[size-file_length:]
 
     def rename_xlsxfile(self, xlsxpath, xlsxfilename, xlsxextension):
+        """ Rename XSLX file until doesn't exists """
         cnt = 1
         while True:
             aux_xlsxfilename = xlsxfilename + str(cnt)
@@ -273,7 +274,7 @@ class MainFrame:
                 if len(self.dir_entry.get()) != 0:
                     p = Path(xlsxfile_path)
                     if p.exists():
-                        res = messagebox.askquestion("El archivo ya existe","El archivo " + xlsxfile_path + " ya existe. ¿Desea crear otro archivo?")
+                        res = messagebox.askquestion("El archivo ya existe","El archivo " + xlsxfile_path + " ya existe. ¿Desea crear otro archivo (se creará automáticamente)?")
                         if res == "yes":
                             xlsxpath, xlsxfilename = self.get_xlsxpath_and_name(xlsxfile_path)
                             full_filename = xlsxfilename.split(".")
@@ -294,7 +295,7 @@ class MainFrame:
             else:
                 self.change_cb_color("IndianRed1","white")
                 self.error_label_websites.place(x=21,y=370)
-                messagebox.showerror("Campos incompletos","Selecciona al menos un sitio web donde realizar las búsquedas")
+                messagebox.showerror("Campos incompletos","Selecciona al menos un sitio web para realizar las búsquedas")
                 self.change_cb_color("white","black")
                 self.error_label_websites.place_forget()
 

@@ -92,14 +92,13 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
                 #print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
                 print(zone.get_text() + " - " + price.get_text())
     
-    messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
-    
+    # Check if results have been found
     if num_results != 0:
-        generate_xlsxfile(xlsxfile_path)
+        messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
+        generate_xlsxfile(xlsxfile_path, zone_list, prices_list)
         open_xlsxfile(xlsxfile_path, master)
     else:
-        generate_xlsxfile(xlsxfile_path)
-        open_xlsxfile(xlsxfile_path, master)
+        messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados.\nNo se generará ningún archivo XLSX.")
 
 def open_xlsxfile(xlsxfile_path, master):
     """ Ask if user want to open XLSX file """
@@ -109,10 +108,28 @@ def open_xlsxfile(xlsxfile_path, master):
         master.destroy()
         os.system(xlsxfile_path)
 
-def generate_xlsxfile(xlsxfile_path):
+def generate_xlsxfile(xlsxfile_path, zone_list, prices_list):
     """ Generate XLSX file with the results found """
     workbook = xlsxwriter.Workbook(xlsxfile_path)
     worksheet = workbook.add_worksheet()
+
+    titles = ["Zona/Calle", "Precio"]
+    col = 0
+    bold = workbook.add_format({'bold': True})
+    money = workbook.add_format({'num_format': '$#,##0'})
+    
+    # Write titles
+    for title in titles:
+        worksheet.write(0, col, title, bold)
+        col += 1
+    
+    col = 0
+    row = 1
+
+    for zone, price in zip(zone_list, prices_list):
+        worksheet.write(row, col, zone.get_text())
+        worksheet.write(row, col+1, price.get_text(), money)
+        row += 1
 
     workbook.close()
 
