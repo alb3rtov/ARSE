@@ -305,7 +305,7 @@ def main():
     root.title("Buscador de alquiler de pisos")
     
     if os.name == "nt":
-        root.iconbitmap("img/icon.ico")
+        root.iconbitmap("img/test.ico")
     else:
         root.iconbitmap("@img/icon.xbm")
     

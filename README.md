@@ -2,16 +2,18 @@
 Apartment Rental Search Engine (ARSE) makes it easy to search for cheap rentals in an particular area and at a price specified by the user. A XLSX file is automatically generated with the information extracted from the selected websites.
 
 ## Requeriments
-Use `pip install -r requeriments.txt` to install all the required modules.
+Use next command to install all the required modules.
 
+    pip install -r requeriments.txt
 
 ## Install Tkinter
 ### Windows
 Installing _python3_ from <a href="https://www.python.org/" target="_blank">**python.org**</a> will automatically install Tcl/Tk, which of course, is needed by Tkinter.
 
 ### Linux
-Debian/Ubuntu distributions:
-Use the command `sudo apt-get install python3-tk`
+For Debian/Ubuntu distributions use the command: 
+
+    sudo apt-get install python3-tk
 
 For more information visit **[the official Tk website](https://tkdocs.com/tutorial/install.html)**
 
@@ -25,7 +27,9 @@ First move to **ARSE** directory typing `cd ARSE` and then execute the program u
 ## Compilation
 If you want to compile the python code you need to use **[pyinstaller](https://www.pyinstaller.org/)**, so first you need to download the **pyinstaller** module for your OS (it will install automatically if you use _[requeriments.txt](https://github.com/alb3rtov/ARSE/blob/main/requeriments.txt)_)
 
-Type this command to compile the code: `pyinstaller.exe --onefile --windowed --name ARSE --icon=img/icon.icon main.py`
+Type this command to compile the code: 
+
+    pyinstaller.exe --onefile --windowed --name ARSE --icon=img/icon.icon main.py
 
 It will generate a EXE file in the _dist_ directory, you have to move this EXE file to the main directory (ARSE).
 

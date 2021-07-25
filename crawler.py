@@ -1,4 +1,5 @@
 import urllib.parse
+import urllib.request
 import requests
 import xlsxwriter
 import os
@@ -41,65 +42,83 @@ next_page_index = {"milanuncios" : "&pagina=",
                 "vivados" : "?page="
 }
 
+def check_internet_connection():
+    """ Check internet connection """
+    try:
+        urllib.request.urlopen("http://google.com")
+        return True
+    except:
+        return False
+
 def main_crawler(town, province, website_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master):
     """ Request the HTML code of each listed website and extract the relevant information """
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
-    }
-
-    num_results = 0
-
-    # Loop for websites selected by user
-    for i in range(len(website_list)):
-        website_name = urllib.parse.urlparse(website_list[i])
-        website_name = website_name.netloc[4:]
-        website_name = website_name[:-4]
-        
-        url = generate_url(website_list[i], town, province, website_name, flat_type, max_price, min_price)
-        first_iteration = True
-
-        # If user select 6 o more pages set a big number for get all possible results
-        if num_page_search == "6 o más":
-            num_page_search = 9999
-
-        # Loop for the num of pages selected
-        for j in range(int(num_page_search)):
-            if first_iteration:
-                first_iteration = False
-            else:
-                url = generate_next_url(url, website_name, str(j+1))
-
-            # Request and get HTML code
-            response = requests.get(url, headers=headers)
-            soup = BeautifulSoup(response.content, 'html.parser')
-
-            # Get appropriate tags for website
-            prices_tags_list = prices_tag.get(website_name).split()
-            price_tag = prices_tags_list[0]
-            price_class = prices_tags_list[1]
-
-            zones_tag_list = zones_tag.get(website_name).split()
-            zone_tag = zones_tag_list[0]
-            zone_class = zones_tag_list[1]
-
-            # Find necesarry tags
-            zone_list = soup.findAll(zone_tag,{"class":zone_class})
-            prices_list = soup.findAll(price_tag,{"class":price_class})
-
-            num_results += len(zone_list)
-
-            #for zone, price in zip(zone_list, prices_list):
-                #print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
-            #    print(zone.get_text() + " - " + price.get_text())
     
-    # Check if results have been found
-    if num_results != 0:
-        messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
-        generate_xlsxfile(xlsxfile_path, zone_list, prices_list)
-        open_xlsxfile(xlsxfile_path, master)
-    else:
-        messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados.\nNo se generará ningún archivo XLSX.")
+    if check_internet_connection():
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
+            }
 
+            num_results = 0
+
+            # Loop for websites selected by user
+            for i in range(len(website_list)):
+                website_name = urllib.parse.urlparse(website_list[i])
+                website_name = website_name.netloc[4:]
+                website_name = website_name[:-4]
+                
+                url = generate_url(website_list[i], town, province, website_name, flat_type, max_price, min_price)
+                first_iteration = True
+
+                # If user select 6 o more pages set a big number for get all possible results
+                if num_page_search == "6 o más":
+                    num_page_search = 9999
+
+                # Loop for the num of pages selected
+                for j in range(int(num_page_search)):
+                    if first_iteration:
+                        first_iteration = False
+                    else:
+                        url = generate_next_url(url, website_name, str(j+1))
+
+                    # Request and get HTML code
+                    response = requests.get(url, headers=headers)
+                    soup = BeautifulSoup(response.content, 'html.parser')
+
+                    # Get appropriate tags for website
+                    prices_tags_list = prices_tag.get(website_name).split()
+                    price_tag = prices_tags_list[0]
+                    price_class = prices_tags_list[1]
+
+                    zones_tag_list = zones_tag.get(website_name).split()
+                    zone_tag = zones_tag_list[0]
+                    zone_class = zones_tag_list[1]
+
+                    # Find necesarry tags
+                    zone_list = soup.findAll(zone_tag,{"class":zone_class})
+                    prices_list = soup.findAll(price_tag,{"class":price_class})
+
+                    num_results += len(zone_list)
+
+                    for zone, price in zip(zone_list, prices_list):
+                        print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
+                    #    print(zone.get_text() + " - " + price.get_text())
+
+            # Check if results have been found
+            if num_results != 0:
+                messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
+                generate_xlsxfile(xlsxfile_path, zone_list, prices_list)
+                open_xlsxfile(xlsxfile_path, master)
+            else:
+                messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados.\nNo se generará ningún archivo XLSX.")
+
+        except HTTPError as e:
+            messagebox.showerror("HTTPError",e)
+        except AttributeError as e:
+            messagebox.showerror("AttributeError",e)
+    
+    else:
+        messagebox.showwarning("Error en la conexión a internet", "Error conectando con los servidores.\nComprueba tu conexión a Internet.")
 def open_xlsxfile(xlsxfile_path, master):
     """ Ask if user want to open XLSX file """
     openfile = messagebox.askquestion("Archivo XLSX generado","Se ha generado un archivo XLSX con los resultados encontrados (" + xlsxfile_path + "). ¿Deseas abrir el archivo?")
