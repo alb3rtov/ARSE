@@ -2,18 +2,14 @@
 Apartment Rental Search Engine (ARSE) makes it easy to search for cheap rentals in an particular area and at a price specified by the user. A XLSX file is automatically generated with the information extracted from the selected websites.
 
 ## Requeriments
-Use next command to install all the required modules.
-
-    pip install -r requeriments.txt
+Use the command `pip install -r requeriments.txt` to install all the required modules 
 
 ## Install Tkinter
 ### Windows
 Installing _python3_ from <a href="https://www.python.org/" target="_blank">**python.org**</a> will automatically install Tcl/Tk, which of course, is needed by Tkinter.
 
 ### Linux
-For Debian/Ubuntu distributions use the command: 
-
-    sudo apt-get install python3-tk
+For Debian/Ubuntu distributions use the command: `sudo apt-get install python3-tk`
 
 For more information visit **[the official Tk website](https://tkdocs.com/tutorial/install.html)**
 
