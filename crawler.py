@@ -3,6 +3,7 @@ import urllib.request
 import requests
 import xlsxwriter
 import os
+import re
 import sys
 from urllib.request import Request, urlopen
 from urllib.request import HTTPError
@@ -59,8 +60,10 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
             }
 
-            num_results = 0
-
+            zone_list = []
+            prices_list = []
+            url_list = []
+            
             # Loop for websites selected by user
             for i in range(len(website_list)):
                 website_name = urllib.parse.urlparse(website_list[i])
@@ -95,22 +98,21 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
                     zone_class = zones_tag_list[1]
 
                     # Find necesarry tags
-                    zone_list = soup.findAll(zone_tag,{"class":zone_class})
-                    prices_list = soup.findAll(price_tag,{"class":price_class})
+                    zone_list = zone_list + soup.findAll(zone_tag,{"class":zone_class})
+                    prices_list = prices_list + soup.findAll(price_tag,{"class":price_class})                    
+                    url_list = url_list + generate_url_list(zone_list, website_name, url)
 
-                    num_results += len(zone_list)
-
-                    for zone, price in zip(zone_list, prices_list):
-                        print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
-                    #    print(zone.get_text() + " - " + price.get_text())
+            #for zone, price in zip(zone_list, prices_list):
+            #    print(zone.get_text() + " - " + price.get_text() + " - " + zone.attrs["href"])
+                        #print(zone.get_text() + " - " + price.get_text() + " - " + price.attrs["href"])
 
             # Check if results have been found
-            if num_results != 0:
-                messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados")
-                generate_xlsxfile(xlsxfile_path, zone_list, prices_list)
+            if len(zone_list) != 0:
+                messagebox.showinfo("Resultados","Se han encontrado " + str(len(zone_list)) + " resultados")
+                generate_xlsxfile(xlsxfile_path, zone_list, prices_list, url_list)
                 open_xlsxfile(xlsxfile_path, master)
             else:
-                messagebox.showinfo("Resultados","Se han encontrado " + str(num_results) + " resultados.\nNo se generará ningún archivo XLSX.")
+                messagebox.showinfo("Resultados","Se han encontrado " + str(len(zone_list)) + " resultados.\nNo se generará ningún archivo XLSX.")
 
         except HTTPError as e:
             messagebox.showerror("HTTPError",e)
@@ -119,6 +121,18 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
     
     else:
         messagebox.showwarning("Error en la conexión a internet", "Error conectando con los servidores.\nComprueba tu conexión a Internet.")
+
+def generate_url_list(zone_list, website_name, url):
+    """ Generate url list from HTML page code """
+    url_list = []
+    for zone in zone_list:
+        if website_name == "milanuncios" or website_name == "pisos":
+            if zone.attrs["href"][0] == "/":
+                url_list.append("https://www." + website_name + ".com" + zone.attrs["href"])
+            else:
+                url_list.append(url + zone.attrs["href"])
+    return url_list
+
 def open_xlsxfile(xlsxfile_path, master):
     """ Ask if user want to open XLSX file """
     openfile = messagebox.askquestion("Archivo XLSX generado","Se ha generado un archivo XLSX con los resultados encontrados (" + xlsxfile_path + "). ¿Deseas abrir el archivo?")
@@ -128,12 +142,12 @@ def open_xlsxfile(xlsxfile_path, master):
         os.system(xlsxfile_path)
         sys.exit()
 
-def generate_xlsxfile(xlsxfile_path, zone_list, prices_list):
+def generate_xlsxfile(xlsxfile_path, zone_list, prices_list, url_list):
     """ Generate XLSX file with the results found """
     workbook = xlsxwriter.Workbook(xlsxfile_path)
     worksheet = workbook.add_worksheet()
 
-    titles = ["Zona/Calle", "Precio"]
+    titles = ["Zona/Calle", "Precio", "URL"]
     col = 0
     bold = workbook.add_format({'bold': True})
     money = workbook.add_format({'num_format': '$#,##0'})
@@ -146,12 +160,28 @@ def generate_xlsxfile(xlsxfile_path, zone_list, prices_list):
     col = 0
     row = 1
 
-    for zone, price in zip(zone_list, prices_list):
-        worksheet.write(row, col, zone.get_text())
-        worksheet.write(row, col+1, price.get_text(), money)
+    for zone, price, url in zip(zone_list, prices_list, url_list):
+        data_list = [zone.get_text(), price.get_text(), url]
+        clean_data_list = clean_data(data_list)
+
+        worksheet.write(row, col, clean_data_list[0])
+        worksheet.write(row, col+1, clean_data_list[1], money)
+        worksheet.write(row, col+2, clean_data_list[2])
         row += 1
 
     workbook.close()
+
+    return row
+
+def clean_data(data_list):
+    """ Clean data of spaces and special characters """
+    clean_data_list = []
+    
+    for data in data_list:
+        clean_line = re.sub('\s+',' ', str(data))
+        clean_data_list.append(clean_line)
+
+    return clean_data_list
 
 def generate_next_url(url, website_name, page):
     """ Generate url for the next page of a given website """
