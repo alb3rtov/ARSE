@@ -5,10 +5,13 @@ import xlsxwriter
 import os
 import re
 import sys
+import time
 from urllib.request import Request, urlopen
 from urllib.request import HTTPError
 from bs4 import BeautifulSoup
 from tkinter import messagebox
+
+VERSION = "v0.1.5-alpha"
 
 """ Global lists and dics """
 def_url_sites_list = ["https://www.milanuncios.com/alquiler-de-",
@@ -53,7 +56,6 @@ def check_internet_connection():
 
 def main_crawler(town, province, website_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master):
     """ Request the HTML code of each listed website and extract the relevant information """
-    
     if check_internet_connection():
         try:
             headers = {
@@ -97,7 +99,7 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
                     zone_tag = zones_tag_list[0]
                     zone_class = zones_tag_list[1]
 
-                    # Find necesarry tags
+                    # Find tags
                     zone_list = zone_list + soup.findAll(zone_tag,{"class":zone_class})
                     prices_list = prices_list + soup.findAll(price_tag,{"class":price_class})                    
                     url_list = url_list + generate_url_list(zone_list, website_name, url)

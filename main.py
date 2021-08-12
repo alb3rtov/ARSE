@@ -1,8 +1,12 @@
 import tkinter as tk
 import tkinter.font as font
+from urllib import request
+import requests
+from bs4 import BeautifulSoup
 import crawler
 import json
 import os
+import threading
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
@@ -145,7 +149,28 @@ class MainFrame:
         self.dir_image = self.dir_image.resize((27, 23), Image.ANTIALIAS)
         self.dir_icon = ImageTk.PhotoImage(self.dir_image)
         self.dir_button = tk.Button(master, bg='white', relief='groove', borderwidth=0, cursor='hand2', image=self.dir_icon, command=self.browse_dir)
-        self.dir_button.place(x=430,y=522) 
+        self.dir_button.place(x=430,y=522)
+        
+        # Launch a thread for check updates
+        th = threading.Thread(target=self.check_update)
+        th.start()
+    
+    def check_update(self):
+        """ Check if there is a new release on GitHub """
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
+        }
+
+        res = requests.get("https://github.com/alb3rtov/ARSE", headers=headers)
+        soup = BeautifulSoup(res.content, 'html.parser')
+        
+        for ver in soup.findAll("span", {"class":"css-truncate css-truncate-target text-bold mr-2"}):
+            version = ver.text
+            
+        if version != crawler.VERSION:
+            response = messagebox.askquestion("Actualización disponible", "Hay una nueva actualización disponible. ¿Deseas descargar la nueva versión " + version + "?")
+            if response == "yes":
+                print("descargar")
 
     def browse_dir(self):
         """ Request directory for the XLSX file """
