@@ -4,7 +4,7 @@ Apartment Rental Search Engine (ARSE) makes it easy to search for cheap rentals 
 ## Requeriments
 Use the command `pip install -r requeriments.txt` to install all the required modules.
 
-For Linux users, in order to install the `xlsxwriter` correctly, you must install it from your package manager. For Debian/Ubuntu just type `sudo apt-get install python-xlsxwriter`. If this doesn't work, and still getting a `ImportError: No module named xlsxwriter`, you must to clone de official repository of **[xlsxwriter](https://github.com/jmcnamara/XlsxWriter)** and then install it using `sudo python3 setup.py install`. If you still getting any issue with `xlsxwriter` module visit the [official website](https://xlsxwriter.readthedocs.io/getting_started.html). 
+For Linux users, in order to install the `xlsxwriter` correctly, you must install it from your package manager. For Debian/Ubuntu just type `sudo apt-get install python-xlsxwriter`. If this doesn't work, and still getting a _ImportError: No module named xlsxwriter_, you must to clone de official repository of **[xlsxwriter](https://github.com/jmcnamara/XlsxWriter)** and then install it using `sudo python3 setup.py install`. If you still getting any issue with `xlsxwriter` module visit the [official website](https://xlsxwriter.readthedocs.io/getting_started.html). 
 
 ## Install Tkinter
 ### Windows
