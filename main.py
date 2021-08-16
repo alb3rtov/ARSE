@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import crawler
 import json
 import os
+import webbrowser
 import threading
 from tkinter import ttk
 from tkinter import messagebox
@@ -102,7 +103,7 @@ class MainFrame:
         self.checkbox1.place(x=30,y=380)
 
         self.v_cb2 = tk.IntVar()
-        self.checkbox2 = tk.Checkbutton(master, text="Fotocasa", variable=self.v_cb2, bg="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox2 = tk.Checkbutton(master, text="Fotocasa", variable=self.v_cb2, bg="white", onvalue=1, offvalue=0)
         self.checkbox2.place(x=30,y=420)
         
         self.v_cb3 = tk.IntVar()
@@ -118,7 +119,7 @@ class MainFrame:
         self.checkbox5.place(x=200,y=420)
 
         self.v_cb6 = tk.IntVar()
-        self.checkbox6= tk.Checkbutton(master, text="Enalquier", variable=self.v_cb6, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox6= tk.Checkbutton(master, text="Enalquiler", variable=self.v_cb6, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
         self.checkbox6.place(x=200,y=460)
 
         self.v_cb7 = tk.IntVar()
@@ -156,21 +157,25 @@ class MainFrame:
         th.start()
     
     def check_update(self):
-        """ Check if there is a new release on GitHub """
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
-        }
+        try:
+            """ Check if there is a new release on GitHub """
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
+            }
 
-        res = requests.get("https://github.com/alb3rtov/ARSE", headers=headers)
-        soup = BeautifulSoup(res.content, 'html.parser')
-        
-        for ver in soup.findAll("span", {"class":"css-truncate css-truncate-target text-bold mr-2"}):
-            version = ver.text
+            res = requests.get("https://github.com/alb3rtov/ARSE", headers=headers)
+            soup = BeautifulSoup(res.content, 'html.parser')
             
-        if version != crawler.VERSION:
-            response = messagebox.askquestion("Actualización disponible", "Hay una nueva actualización disponible. ¿Deseas descargar la nueva versión " + version + "?")
-            if response == "yes":
-                print("descargar")
+            for ver in soup.findAll("span", {"class":"css-truncate css-truncate-target text-bold mr-2"}):
+                version = ver.text
+                
+            if version != crawler.__version__:
+                response = messagebox.askquestion("Actualización disponible", "Hay una nueva actualización disponible. ¿Deseas descargar la nueva versión " + version + "?")
+                if response == "yes":
+                    download_url = "https://www.github.com/alb3rtov/ARSE/releases/download/" + version + "/ARSE.zip"
+                    webbrowser.open(download_url)
+        except:
+            return
 
     def browse_dir(self):
         """ Request directory for the XLSX file """
@@ -305,6 +310,7 @@ class MainFrame:
                             full_filename = xlsxfilename.split(".")
                             self.dir_entry.delete(0, tk.END)
                             self.dir_entry.insert(tk.END, self.rename_xlsxfile(xlsxpath, full_filename[0], full_filename[1]))
+                            
                             self.create_loading_wheel(master)
                             crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, self.dir_entry.get(), master)
                     else:
