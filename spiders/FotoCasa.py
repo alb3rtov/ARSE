@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup 
 
-class FotoCasa():
+class Fotocasa():
     def __init__(self, town, province, flat_type, max_price, min_price, num_page):
         self.zone_list = []
         self.prices_list = []

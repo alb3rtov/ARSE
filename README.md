@@ -17,17 +17,17 @@ For more information visit **[the official Tk website](https://tkdocs.com/tutori
 
 ## Execute
 ### Windows
-First move to **ARSE** directory typing `cd ARSE` and then execute the program using `python.exe .\main.py`
+First move to **ARSE** directory typing `cd ARSE` and then execute the program using `python.exe .\app.py`
 
 ### Linux
-First move to **ARSE** directory typing `cd ARSE` and then execute the program using `python3 main.py`
+First move to **ARSE** directory typing `cd ARSE` and then execute the program using `python3 app.py`
 
 ## Compilation
 If you want to compile the python code you need to use **[pyinstaller](https://www.pyinstaller.org/)**, so first you need to download the **pyinstaller** module for your OS (it will install automatically if you use _[requeriments.txt](https://github.com/alb3rtov/ARSE/blob/main/requeriments.txt)_)
 
 Type this command to compile the code: 
 
-    pyinstaller.exe --onefile --windowed --name ARSE --icon=img/icon.icon main.py
+    pyinstaller.exe --onefile --windowed --name ARSE --icon=img/icon.ico .\app.py
 
 It will generate a EXE file in the _dist_ directory, you have to move this EXE file to the main directory (ARSE).
 

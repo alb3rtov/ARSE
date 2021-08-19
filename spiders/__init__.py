@@ -1,1 +1,0 @@
-__all__ = ['FotoCasa', 'Idealista', 'Milanuncios', 'Pisos', 'Vivados']

@@ -1,7 +1,7 @@
 ######################################################################
-# Program name      : scraper.py 
+# Program name      : scrap_selector.py 
 # Author/s          : Alberto Vázquez
-# Purpose           : Contains the all the code to crawl the websites
+# Purpose           : Selects the spider for each website
 # Version:          : 1.0.2-alpha
 ######################################################################
 
@@ -12,7 +12,11 @@ import re
 import sys
 import xlsxwriter
 
-from spiders import *
+from spiders.Fotocasa import Fotocasa
+from spiders.Idealista import Idealista
+from spiders.Milanuncios import Milanuncios
+from spiders.Pisos import Pisos
+from spiders.Vivados import Vivados
 from urllib.request import HTTPError
 from tkinter import messagebox
 
@@ -35,19 +39,19 @@ def check_internet_connection():
 def select_spider(website_name, town, province, flat_type, max_price, min_price, num_page):
     """ Select the spider of the website """
     if website_name == "milanuncios":
-        spider = Milanuncios.Milanuncios(town, province, flat_type, max_price, min_price, num_page)
+        spider = Milanuncios(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
     elif website_name == "fotocasa":
-        spider = FotoCasa.FotoCasa()
+        spider = Fotocasa(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
     elif website_name == "idealista":
-        spider = Idealista.Idealista(town, province, flat_type, max_price, min_price, num_page)
+        spider = Idealista(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
     elif website_name == "pisos":
-        spider = Pisos.Pisos(town, province, flat_type, max_price, min_price, num_page)
+        spider = Pisos(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
     elif website_name == "vivados":
-        spider = Vivados.Vivados(town, province, flat_type, max_price, min_price, num_page)
+        spider = Vivados(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
 
 
