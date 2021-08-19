@@ -1,29 +1,27 @@
 ######################################################################
-# Program name      : main.py 
+# Program name      : app.py 
 # Author/s          : Alberto Vázquez
 # Purpose           : Main file that display graphical user interface
-# Version:          : 0.1.8-alpha
+# Version:          : 1.0.2-alpha
 ######################################################################
 
 import json
 import os
 import requests
-import scraper
+import scrap_selecter
 import threading
 import tkinter as tk
 import tkinter.font as font
 import webbrowser
 
 from bs4 import BeautifulSoup
-from headers import github_headers
 from pathlib import Path
 from PIL import ImageTk,Image
-from urllib import request
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
 
-__version__ = "v0.1.8-alpha"
+__version__ = "v1.0.2-alpha"
 
 class MainFrame:
     """ Class that contains the main items of the frame """
@@ -70,9 +68,17 @@ class MainFrame:
         self.lbl_flat_type = tk.Label(master, font=main_font, bg="white", text= "Tipo")
         self.lbl_flat_type.place(x=30,y=188)
 
+        housing_types = ["pisos",
+            "estudios",
+            "apartamentos",
+            "casas",
+            "chalets",
+            "aticos"
+        ]
+
         self.housing_var = tk.StringVar()
-        self.housing_var.set(scraper.housing_types[0])
-        self.dropdown_menu_flat_type = ttk.Combobox(master, width=15, state="readonly", textvariable = self.housing_var, values=scraper.housing_types)
+        self.housing_var.set(housing_types[0])
+        self.dropdown_menu_flat_type = ttk.Combobox(master, width=15, state="readonly", textvariable = self.housing_var, values=housing_types)
         self.dropdown_menu_flat_type.configure(font=main_font)
         self.dropdown_menu_flat_type.place(x=80, y=188)
 
@@ -126,7 +132,7 @@ class MainFrame:
         self.checkbox4.place(x=200,y=380)
 
         self.v_cb5 = tk.IntVar()
-        self.checkbox5= tk.Checkbutton(master, text="Vivados", variable=self.v_cb5, bg="white", highlightcolor="white", onvalue=1, offvalue=0)
+        self.checkbox5= tk.Checkbutton(master, text="Vivados", variable=self.v_cb5, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
         self.checkbox5.place(x=200,y=420)
 
         self.v_cb6 = tk.IntVar()
@@ -170,7 +176,13 @@ class MainFrame:
     def check_update(self):
         try:
             """ Check if there is a new release on GitHub """
-            headers = github_headers
+            headers = {
+                'Referer': 'https://github.com/alb3rtov/ARSE',
+                'sec-ch-ua': '"Chromium";v="92", " Not A;Brand";v="99", "Microsoft Edge";v="92"',
+                'sec-ch-ua-mobile': '?0',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.73'
+            }
+
             res = requests.get("https://github.com/alb3rtov/ARSE", headers=headers)
             soup = BeautifulSoup(res.content, 'html.parser')
             
@@ -299,7 +311,7 @@ class MainFrame:
 
             for i in range(len(checked_sites_list)):
                 if checked_sites_list[i] == 1:
-                    websites_list.append(scraper.def_url_sites_list[i])
+                    websites_list.append(scrap_selecter.def_url_sites_list[i])
                     at_least_one_ws_selected = True
             
             if at_least_one_ws_selected:
@@ -320,10 +332,10 @@ class MainFrame:
                             self.dir_entry.insert(tk.END, self.rename_xlsxfile(xlsxpath, full_filename[0], full_filename[1]))
                             
                             self.create_loading_wheel(master)
-                            scraper.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, self.dir_entry.get(), master)
+                            scrap_selecter.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, self.dir_entry.get(), master)
                     else:
                         self.create_loading_wheel(master)
-                        scraper.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master)
+                        scrap_selecter.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master)
                 else:
                     self.dir_entry.configure(state="normal")
                     self.dir_entry.configure(bg="IndianRed1")
