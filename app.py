@@ -8,7 +8,7 @@
 import json
 import os
 import requests
-import scrap_selecter
+import scrap_selector
 import threading
 import tkinter as tk
 import tkinter.font as font
@@ -311,7 +311,7 @@ class MainFrame:
 
             for i in range(len(checked_sites_list)):
                 if checked_sites_list[i] == 1:
-                    websites_list.append(scrap_selecter.def_url_sites_list[i])
+                    websites_list.append(scrap_selector.def_url_sites_list[i])
                     at_least_one_ws_selected = True
             
             if at_least_one_ws_selected:
@@ -332,10 +332,10 @@ class MainFrame:
                             self.dir_entry.insert(tk.END, self.rename_xlsxfile(xlsxpath, full_filename[0], full_filename[1]))
                             
                             self.create_loading_wheel(master)
-                            scrap_selecter.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, self.dir_entry.get(), master)
+                            scrap_selector.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, self.dir_entry.get(), master)
                     else:
                         self.create_loading_wheel(master)
-                        scrap_selecter.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master)
+                        scrap_selector.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master)
                 else:
                     self.dir_entry.configure(state="normal")
                     self.dir_entry.configure(bg="IndianRed1")
