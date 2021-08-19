@@ -1,21 +1,28 @@
+######################################################################
+# Program name      : scraper.py 
+# Author/s          : Alberto Vázquez
+# Purpose           : Contains the all the code to crawl the websites
+# Version:          : 0.1.8-alpha
+######################################################################
+
+import headers
+import os
 import urllib.parse
 import urllib.request
-import requests
-import xlsxwriter
-import os
 import re
+import requests
 import sys
+import xlsxwriter
+
+from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
 from urllib.request import HTTPError
-from bs4 import BeautifulSoup
 from tkinter import messagebox
-
-__version__ = "v0.1.5-alpha"
 
 """ Global lists and dics """
 def_url_sites_list = ["https://www.milanuncios.com/alquiler-de-",
                     "https://www.fotocasa.com/es/alquiler/",
-                    "https://www.idealista.com/alquiler-viviendas/",
+                    "https://www.idealista.com/buscar/alquiler-",
                     "https://www.pisos.com/alquiler/",
                     "https://www.vivados.com/alquilar/"
 ]
@@ -30,19 +37,29 @@ housing_types = ["pisos",
 
 prices_tag = {"milanuncios" : "div aditem-price",
             "fotocasa" : "span re-Card-price",
+            "idealista" : "span item-price h2-simulated",
             "pisos" : "span ad-preview__price",
             "vivados" : "span baseprice"
 }
 
 zones_tag = {"milanuncios" : "a aditem-detail-title",
             "fotocasa" : "h3 re-Card-title",
+            "idealista" : "a item-link",
             "pisos" : "a ad-preview__title",
             "vivados" : "div title"
 }
 
 next_page_index = {"milanuncios" : "&pagina=",
                 "fotocasa" : "/l",
+                "idealista" : "/pagina-",
                 "vivados" : "?page="
+}
+
+websites_headers = {"milanuncios": headers.milanuncios_headers,
+                "fotocasa" : headers.fotocasa_headers,
+                "idealista": headers.idealista_headers,
+                "pisos" : headers.pisos_headers,
+                "vivados" : headers.vivados_headers
 }
 
 def check_internet_connection():
@@ -57,22 +74,18 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
     """ Request the HTML code of each listed website and extract the relevant information """
     if check_internet_connection():
         try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64', "Upgrade-Insecure-Requests": "1","DNT": "1","Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Accept-Language": "en-US,en;q=0.5","Accept-Encoding": "gzip, deflate"
-            }
-
             zone_list = []
             prices_list = []
             url_list = []
-            
+
             # Loop for websites selected by user
             for i in range(len(website_list)):
                 website_name = urllib.parse.urlparse(website_list[i])
                 website_name = website_name.netloc[4:]
                 website_name = website_name[:-4]
-                
+                 
+                headers = websites_headers.get(website_name)
                 url = generate_url(website_list[i], town, province, website_name, flat_type, max_price, min_price)
-                print(url)
                 first_iteration = True
 
                 # If user select 6 o more pages set a big number for get all possible results
@@ -100,13 +113,10 @@ def main_crawler(town, province, website_list, flat_type, max_price, min_price, 
                     zone_class = zones_tag_list[1]
 
                     # Find tags
-                    zone_list = zone_list + soup.findAll(zone_tag,{"class":zone_class})
+                    current_zone_list = soup.findAll(zone_tag,{"class":zone_class})
+                    zone_list = zone_list + current_zone_list
                     prices_list = prices_list + soup.findAll(price_tag,{"class":price_class})                    
-                    url_list = url_list + generate_url_list(zone_list, website_name, url)
-
-            for zone, price in zip(zone_list, prices_list):
-                print(zone.get_text() + " - " + price.get_text())
-                        #print(zone.get_text() + " - " + price.get_text() + " - " + price.attrs["href"])
+                    url_list = url_list + generate_url_list(current_zone_list, website_name, url)
 
             # Check if results have been found
             if len(zone_list) != 0:
@@ -128,7 +138,9 @@ def generate_url_list(zone_list, website_name, url):
     """ Generate url list from HTML page code """
     url_list = []
     for zone in zone_list:
-        if website_name == "milanuncios" or website_name == "pisos":
+        if (website_name == "milanuncios" or 
+            website_name == "pisos" or 
+            website_name == "idealista"):
             if zone.attrs["href"][0] == "/":
                 url_list.append("https://www." + website_name + ".com" + zone.attrs["href"])
             else:
@@ -194,7 +206,7 @@ def generate_next_url(url, website_name, page):
     elif website_name == "fotocasa":
         return
     elif website_name == "idealista":
-        return
+        url = url + next_page_index.get(website_name) + page + ".htm"
     elif website_name == "pisos":
         url = url + page + "/"
         #print(url)
@@ -217,6 +229,7 @@ def generate_url(url_website, town, province, website_name, flat_type, max_price
         if flat_type == "pisos":
             flat_type = "viviendas"
         
+        # Get latitute and longitude of the town
         url_location = 'https://nominatim.openstreetmap.org/search/' + town +'?format=json'
         response = requests.get(url_location).json()
 
@@ -225,7 +238,12 @@ def generate_url(url_website, town, province, website_name, flat_type, max_price
         return url
 
     elif website_name == "idealista":
-        return
+        if flat_type == "pisos":
+            flat_type = "viviendas"
+        
+        url = url_website + flat_type + "/" + province + "-" + town + "/"
+        print(url)
+        return url
 
     elif website_name == "pisos":
         url = url_website + flat_type + "-" + town.replace("-","_") + "_capital/desde-" + min_price + "/hasta-" + max_price + "/"

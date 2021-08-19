@@ -129,7 +129,8 @@ dmypy.json
 .pyre/
 
 #Others
-idea.png
 pisos*.xlsx
 *.exe
-todo.txt
+tests/
+*.html
+drivers/

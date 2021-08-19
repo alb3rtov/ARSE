@@ -1,18 +1,29 @@
-import tkinter as tk
-import tkinter.font as font
-from urllib import request
-import requests
-from bs4 import BeautifulSoup
-import crawler
+######################################################################
+# Program name      : main.py 
+# Author/s          : Alberto Vázquez
+# Purpose           : Main file that display graphical user interface
+# Version:          : 0.1.8-alpha
+######################################################################
+
 import json
 import os
-import webbrowser
+import requests
+import scraper
 import threading
-from tkinter import ttk
-from tkinter import messagebox
-from tkinter import filedialog
-from PIL import ImageTk,Image
+import tkinter as tk
+import tkinter.font as font
+import webbrowser
+
+from bs4 import BeautifulSoup
+from headers import github_headers
 from pathlib import Path
+from PIL import ImageTk,Image
+from urllib import request
+from tkinter import filedialog
+from tkinter import messagebox
+from tkinter import ttk
+
+__version__ = "v0.1.8-alpha"
 
 class MainFrame:
     """ Class that contains the main items of the frame """
@@ -60,8 +71,8 @@ class MainFrame:
         self.lbl_flat_type.place(x=30,y=188)
 
         self.housing_var = tk.StringVar()
-        self.housing_var.set(crawler.housing_types[0])
-        self.dropdown_menu_flat_type = ttk.Combobox(master, width=15, state="readonly", textvariable = self.housing_var, values=crawler.housing_types)
+        self.housing_var.set(scraper.housing_types[0])
+        self.dropdown_menu_flat_type = ttk.Combobox(master, width=15, state="readonly", textvariable = self.housing_var, values=scraper.housing_types)
         self.dropdown_menu_flat_type.configure(font=main_font)
         self.dropdown_menu_flat_type.place(x=80, y=188)
 
@@ -103,11 +114,11 @@ class MainFrame:
         self.checkbox1.place(x=30,y=380)
 
         self.v_cb2 = tk.IntVar()
-        self.checkbox2 = tk.Checkbutton(master, text="Fotocasa", variable=self.v_cb2, bg="white", onvalue=1, offvalue=0)
+        self.checkbox2 = tk.Checkbutton(master, text="Fotocasa", variable=self.v_cb2, bg="white",  highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
         self.checkbox2.place(x=30,y=420)
         
         self.v_cb3 = tk.IntVar()
-        self.checkbox3 = tk.Checkbutton(master, text="Idealista", variable=self.v_cb3, bg="white", highlightcolor="white", onvalue=1, offvalue=0, state=tk.DISABLED)
+        self.checkbox3 = tk.Checkbutton(master, text="Idealista", variable=self.v_cb3, bg="white", highlightcolor="white", onvalue=1, offvalue=0)
         self.checkbox3.place(x=30,y=460)
 
         self.v_cb4 = tk.IntVar()
@@ -159,17 +170,14 @@ class MainFrame:
     def check_update(self):
         try:
             """ Check if there is a new release on GitHub """
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.64'
-            }
-
+            headers = github_headers
             res = requests.get("https://github.com/alb3rtov/ARSE", headers=headers)
             soup = BeautifulSoup(res.content, 'html.parser')
             
             for ver in soup.findAll("span", {"class":"css-truncate css-truncate-target text-bold mr-2"}):
                 version = ver.text
                 
-            if version != crawler.__version__:
+            if version != __version__:
                 response = messagebox.askquestion("Actualización disponible", "Hay una nueva actualización disponible. ¿Deseas descargar la nueva versión " + version + "?")
                 if response == "yes":
                     download_url = "https://www.github.com/alb3rtov/ARSE/releases/download/" + version + "/ARSE.zip"
@@ -291,7 +299,7 @@ class MainFrame:
 
             for i in range(len(checked_sites_list)):
                 if checked_sites_list[i] == 1:
-                    websites_list.append(crawler.def_url_sites_list[i])
+                    websites_list.append(scraper.def_url_sites_list[i])
                     at_least_one_ws_selected = True
             
             if at_least_one_ws_selected:
@@ -312,10 +320,10 @@ class MainFrame:
                             self.dir_entry.insert(tk.END, self.rename_xlsxfile(xlsxpath, full_filename[0], full_filename[1]))
                             
                             self.create_loading_wheel(master)
-                            crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, self.dir_entry.get(), master)
+                            scraper.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, self.dir_entry.get(), master)
                     else:
                         self.create_loading_wheel(master)
-                        crawler.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master)
+                        scraper.main_crawler(town, province, websites_list, flat_type, max_price, min_price, num_page_search, xlsxfile_path, master)
                 else:
                     self.dir_entry.configure(state="normal")
                     self.dir_entry.configure(bg="IndianRed1")
