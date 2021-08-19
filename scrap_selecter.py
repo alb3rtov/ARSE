@@ -12,11 +12,7 @@ import re
 import sys
 import xlsxwriter
 
-from spiders.FotoCasa import FotoCasa
-from spiders.Idealista import Idealista
-from spiders.Milanuncios import Milanuncios
-from spiders.Pisos import Pisos
-from spiders.Vivados import Vivados
+from spiders import *
 from urllib.request import HTTPError
 from tkinter import messagebox
 
@@ -39,19 +35,19 @@ def check_internet_connection():
 def select_spider(website_name, town, province, flat_type, max_price, min_price, num_page):
     """ Select the spider of the website """
     if website_name == "milanuncios":
-        spider = Milanuncios(town, province, flat_type, max_price, min_price, num_page)
+        spider = Milanuncios.Milanuncios(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
     elif website_name == "fotocasa":
-        spider = FotoCasa()
+        spider = FotoCasa.FotoCasa()
         return spider.get_info()
     elif website_name == "idealista":
-        spider = Idealista(town, province, flat_type, max_price, min_price, num_page)
+        spider = Idealista.Idealista(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
     elif website_name == "pisos":
-        spider = Pisos(town, province, flat_type, max_price, min_price, num_page)
+        spider = Pisos.Pisos(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
     elif website_name == "vivados":
-        spider = Vivados(town, province, flat_type, max_price, min_price, num_page)
+        spider = Vivados.Vivados(town, province, flat_type, max_price, min_price, num_page)
         return spider.get_info()
 
 
