@@ -24,9 +24,9 @@ class Milanuncios():
         response = requests.get(url, headers=self.milanuncios_headers)
         soup = BeautifulSoup(response.content, 'html.parser')
 
-        self.generate_data_lists(soup)
+        self.generate_data_lists(soup, flat_type)
     
-    def generate_data_lists(self, soup):
+    def generate_data_lists(self, soup, flat_type):
         """ Get all data and convert into several lists """
         prices_tags_list = self.prices_tag.split()
         price_tag = prices_tags_list[0]
@@ -39,9 +39,9 @@ class Milanuncios():
         current_zone_list = soup.findAll(zone_tag,{'class':zone_class})
         self.zone_list = self.zone_list + current_zone_list
         self.prices_list = self.prices_list + soup.findAll(price_tag,{'class':price_class})                    
-        self.url_list = self.url_list + self.generate_url_list(current_zone_list)
+        self.url_list = self.url_list + self.generate_url_list(current_zone_list, flat_type)
 
-    def generate_url_list(self, current_zone_list):
+    def generate_url_list(self, current_zone_list, flat_type):
         """ Generate url list from HTML page code """
         url_list = []
 
@@ -49,7 +49,7 @@ class Milanuncios():
             if zone.attrs["href"][0] == "/":
                 url_list.append('https://www.milanuncios.com' + zone.attrs['href'])
             else:
-                url_list.append(self.main_url + zone.attrs['href'])
+                url_list.append(self.main_url+ flat_type + "/" + zone.attrs['href'])
 
         return url_list
 
