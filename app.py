@@ -21,7 +21,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
 
-__version__ = "v1.0.2-alpha"
+__version__ = "v1.0.1-alpha"
 
 class MainFrame:
     """ Class that contains the main items of the frame """
@@ -192,7 +192,7 @@ class MainFrame:
             if version != __version__:
                 response = messagebox.askquestion("Actualización disponible", "Hay una nueva actualización disponible. ¿Deseas descargar la nueva versión " + version + "?")
                 if response == "yes":
-                    download_url = "https://www.github.com/alb3rtov/ARSE/releases/download/" + version + "/ARSE.zip"
+                    download_url = "https://www.github.com/alb3rtov/ARSE/releases/download/" + version + "/ARSE" + version + ".zip"
                     webbrowser.open(download_url)
         except:
             return
