@@ -15,6 +15,7 @@ For Debian/Ubuntu distributions use the command: `sudo apt-get install python3-t
 
 For more information visit **[the official Tk website](https://tkdocs.com/tutorial/install.html)**
 
+**DO NOT USE python 3.10 version, instead use 3.9 or less for both OS**
 ## Execute
 ### Windows
 First move to **RASE** directory typing `cd RASE` and then execute the program using `python.exe .\app.py`

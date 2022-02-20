@@ -21,7 +21,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
 
-__version__ = "v1.0.1-alpha"
+__version__ = "v1.0.2-alpha"
 
 class MainFrame:
     """ Class that contains the main items of the frame """

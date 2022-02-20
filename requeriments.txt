@@ -2,3 +2,4 @@ xlsxwriter==1.4.4
 beautifulsoup4==4.9.3
 Pillow==8.2.0
 pyinstaller==4.0
+requests==2.7.0
